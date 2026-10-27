@@ -2321,21 +2321,25 @@ function homeCard(cat, title, body) {
 }
 function homeBar(pct) { return '<div class="hbar" aria-hidden="true"><i style="width:' + pct + '%"></i></div>'; }
 function buildHome() {
-  var A = CUR === 'a30' ? { T: T } : { T: PD.a30.T };
+  var A = CUR === 'a30' ? { S: S, T: T } : { S: PD.a30.S, T: PD.a30.T };
+  var apct = 0;
+  Object.keys(ITEMS).forEach(function (id) { var it = ITEMS[id]; if (it.step && A.S.d[it.step] && it.pct > 0) apct += it.pct; });
   var r = HOME.a30({
-    pct: 0, done: 0, total: 1, final: PROF.a30.final,
+    pct: apct, done: Object.keys(A.S.d).length, total: PD.a30.order.length, final: PROF.a30.final,
     cps: PD.a30.phases.map(function (p) { return { target: p.target ? parseHM(p.target) : null, actual: parseHM(A.T.v[p.id]) }; })
   });
-  function timeCard(cat, name, big, label) {
-    return homeCard(cat, name, '<p class="hcn"><b class="t">' + esc(big) + '</b></p><p class="hl">' + esc(label) + '</p>');
+  var tl, tc = 'hl';
+  if (r.last == null) tl = 'Aucun temps noté pour l’instant';
+  else {
+    tl = 'Dernier temps ' + HOME.hm(r.last) + ' · fin estimée ' + HOME.hm(r.est) + (r.margin >= 0 ? ' (marge ' + HOME.hm(r.margin) + ')' : ' (dépasse de ' + HOME.hm(-r.margin) + ')');
+    tc += r.margin >= 0 ? ' ok' : ' late';
   }
-  var h = r.last == null
-    ? homeCard('a30', PROF.a30.name, '<p class="hl">Aucun temps noté pour l’instant</p>')
-    : timeCard('a30', PROF.a30.name, HOME.hm(r.last), 'Dernier temps noté');
+  var h = homeCard('a30', PROF.a30.name,
+    '<p class="hcn"><b>' + pctFr(r.pct) + '<small>%</small></b><span>' + r.done + '/' + r.total + ' étapes</span></p>' + homeBar(r.pct) + '<p class="' + tc + '">' + esc(tl) + '</p>');
   var sp = HOME.speed({ runs: RUNS, limit: SPEED_LIMIT });
   h += sp.last == null
     ? homeCard('speed', PROF.speed.name, '<p class="hl">Aucune run enregistrée</p>')
-    : timeCard('speed', PROF.speed.name, fmtDur(sp.last), 'Dernière run' + (sp.lastDate ? ' · ' + fmtDate(sp.lastDate) : ''));
+    : homeCard('speed', PROF.speed.name, '<p class="hcn"><b class="t">' + esc(fmtDur(sp.last)) + '</b></p><p class="hl">Dernière run' + (sp.lastDate ? ' · ' + esc(fmtDate(sp.lastDate)) : '') + '</p>');
   h += homeCard('steel', SOON.steel[0], '<p class="hl">' + esc(SOON.steel[1]) + '</p><span class="htag">En préparation</span>');
   $('#hcards').innerHTML = h;
 }
