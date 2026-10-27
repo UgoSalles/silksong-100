@@ -104,7 +104,7 @@ main { padding-block: 14px 110px; }
 .phead { appearance: none; width: 100%; text-align: left; background: none; border: 0; padding: 14px 14px 12px; display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; cursor: pointer; }
 .pname { font: 700 21px/1.15 var(--font-display); text-wrap: balance; }
 .pmeta { grid-column: 1; font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.pchev { grid-row: 1 / span 2; grid-column: 2; width: 22px; height: 22px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
+.pchev { grid-row: 1 / span 2; grid-column: 2; width: 30px; height: 30px; padding: 5px; border-radius: 50%; background: var(--surface2); stroke: var(--ink); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
 .phase.open .pchev { transform: rotate(180deg); }
 .pbar { grid-column: 1 / -1; height: 5px; border-radius: 4px; background: var(--surface2); overflow: hidden; }
 .pbar > i { display: block; height: 100%; width: 0; background: var(--ok); }
@@ -114,10 +114,10 @@ main { padding-block: 14px 110px; }
 .pbody { display: none; padding: 0 14px 8px; border-top: 1px solid var(--line); }
 .phase.open .pbody, .searching .phase:not([hidden]) .pbody { display: block; }
 .pintro { margin: 10px 0 4px; font-size: 14.5px; color: var(--muted); }
-/* Bandeaux repliables : ils doivent se voir comme un bouton (fond, bordure et grosse flèche qui se retourne). */
-.pintro summary, .gview summary { cursor: pointer; font-weight: 700; font-size: 14.5px; color: var(--ink); padding: 8px 12px; min-height: 46px; display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--line); border-radius: 12px; list-style: none; }
-.pintro summary::before, .gview summary::before { content: ""; order: 3; flex: 0 0 auto; margin-left: auto; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); }
-.pintro summary::before, .gview summary::before { background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a0d10' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center / 22px no-repeat; transition: transform .2s ease; }
+/* Bandeaux repliables : ils doivent se voir comme un bouton (fond, bordure et flèche rouge qui se retourne ; plus petite que les flèches de zone). */
+.pintro summary, .gview summary { cursor: pointer; font-weight: 700; font-size: 13.5px; color: var(--ink); padding: 5px 10px 5px 12px; min-height: 40px; display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--line); border-radius: 12px; list-style: none; }
+.pintro summary::before, .gview summary::before { content: ""; order: 3; flex: 0 0 auto; margin-left: auto; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); }
+.pintro summary::before, .gview summary::before { background: var(--accent-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e5525e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center / 16px no-repeat; transition: transform .2s ease; }
 .pintro[open] summary::before, .gview[open] summary::before { transform: rotate(180deg); }
 .pintro summary::-webkit-details-marker, .gview summary::-webkit-details-marker { display: none; }
 .pintro[open] summary, .gview[open] summary { margin-bottom: 8px; }
@@ -128,7 +128,7 @@ main { padding-block: 14px 110px; }
 .group:first-of-type .ghead { border-top: 0; }
 .gname { font-weight: 700; font-size: 16.5px; line-height: 1.25; }
 .gcount { font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 700; }
-.ghead .chev { width: 20px; height: 20px; transition: transform .2s; }
+.ghead .chev { width: 26px; height: 26px; padding: 4px; border-radius: 50%; background: var(--surface2); stroke: var(--ink); stroke-width: 2.2; transition: transform .2s; }
 .group.open > .ghead .chev { transform: rotate(180deg); }
 .group.done .gname { color: var(--muted); }
 .group.done .gcount { color: var(--ok); }
