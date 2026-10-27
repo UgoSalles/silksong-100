@@ -99,6 +99,24 @@ a { color: var(--accent); }
 .brand .bname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brand .sync { margin-left: auto; }
 
+/* Speedrun : runs et record */
+.rnote { margin: 0 0 8px; color: var(--muted); font-size: 14.5px; }
+.rbest { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 4px 0; }
+.rbest span { color: var(--muted); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; }
+.rbest b { font: 700 28px/1.1 var(--font-display); font-variant-numeric: lining-nums tabular-nums; }
+.rbest.none { color: var(--muted); font-weight: 700; }
+.rgap { margin: 0; font-size: 14.5px; font-weight: 700; } .rgap.ok { color: var(--ok); } .rgap.late, .rmsg.late { color: var(--accent); }
+.radd { display: grid; gap: 10px; }
+.radd .tfield { justify-content: flex-start; }
+.rmsg { margin: 0; font-size: 14px; min-height: 1px; }
+.rlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.rlist li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.rlist li:first-child { border-top: 0; }
+.rlist b { font-variant-numeric: tabular-nums; }
+.rsub { display: block; color: var(--muted); font-size: 13.5px; }
+.rtag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: 12px; font-weight: 700; }
+.rdel { flex: 0 0 auto; }
+
 /* Onglets du bas */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .tabs .in { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
@@ -315,6 +333,7 @@ textarea.out { width: 100%; min-height: 110px; margin-top: 8px; padding: 10px; b
     </section>
     <section class="tab" id="tab-coll" aria-label="Les 100 %"></section>
     <section class="tab" id="tab-time" aria-label="Temps"></section>
+    <section class="tab" id="tab-runs" aria-label="Runs"></section>
     <section class="tab" id="tab-info" aria-label="Infos"></section>
   </main>
   <nav class="tabs" aria-label="Sections">
@@ -322,6 +341,7 @@ textarea.out { width: 100%; min-height: 110px; margin-top: 8px; padding: 10px; b
       <button type="button" role="tab" data-tab="route" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M5 7h10M5 12h14M5 17h8"/><path d="M18 5l2 2-2 2" /></svg>Route</button>
       <button type="button" role="tab" data-tab="coll" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.4l2.6 2.6 4.8-5.4"/></svg>100 %</button>
       <button type="button" role="tab" data-tab="time" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Temps</button>
+      <button type="button" role="tab" data-tab="runs" aria-selected="false" hidden><svg viewBox="0 0 24 24"><path d="M6 20V4"/><path d="M6 5h11l-2 3.5 2 3.5H6"/></svg>Runs</button>
       <button type="button" role="tab" data-tab="info" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></svg>Infos</button>
     </div>
   </nav>
@@ -630,7 +650,7 @@ const ROUTE_SRC = `## p0 | Avant de partir | - | Réglages et réflexes à avoir
 ### Grotte Verdoyante
 > Départ : début de la partie. Tu traverses la Grotte Verdoyante, puis le village de Gouffre d’Os sans t’y arrêter. Arrivée : L’Antre, à droite de Gouffre d’Os.
 - Traverser la **Grotte Verdoyante** en ignorant le reste. Ramasser seulement les 2 **Baies verdissantes** : la 1re au-dessus d’une falaise près du départ, la 2e en rebondissant sur un ennemi.
-- [B] Vaincre la **Mère Nourricière**. :: Reste côté droit de l’arène : tu places plus de coups.
+- [B] Vaincre la **Mère Forestière**. :: Reste côté droit de l’arène : tu places plus de coups.
 - Traverser **Gouffre d’Os** sans parler aux PNJ, direction L’Antre.
 ### L’Antre
 > Départ : entrée de L’Antre. Ordre : Shakra → Verdoison (Druide, Lance soyeuse) → Bête des Cloches → aller-retour à Gouffre d’Os → prison de Grindle. Arrivée : la salle où chante Shakra, vers l’est.
@@ -1248,6 +1268,169 @@ const ROUTE_SRC = `## p0 | Avant de partir | - | Réglages et réflexes à avoir
 - Plonger jusqu’au fond des Abysses.
 - [B!] Vaincre **Lace Déchue** pour atteindre la fin et débloquer le succès **Achèvement**. :: Le combat est difficile : entraîne-toi d’abord sur une autre sauvegarde. Le jeu doit afficher 100 % avant le combat.
 `;
+const ROUTE_SPEED = `## p0 | Avant de partir | - | Réglages et réflexes de la route « Cloches » (Any% sans glitch majeur), version du jeu 1.0.30000. Chaque étape porte sa fiabilité dans le détail : sourcé (dit par un coureur ou une source citée), déduit (raisonnement à partir des sources) ou incertain (non vérifié : à confirmer en jouant). Les cotes A à D sont des estimations de difficulté : A facile, B moyen, C difficile, D à éviter.
+### Réglages
+- [!] Jouer sur la version actuelle du jeu (1.0.30000), sans rétrograder. Nouvelle sauvegarde, mode normal, aucun mod. :: Sourcé. La route des meilleurs temps sans Cape (« Key ») exige l’ancienne version 1.0.28324 : elle est écartée ici. Le mod d’entraînement DebugMod n’est pas autorisé pour un run officiel.
+- [!] Le succès « Speedrunner » (Terminer le jeu en moins de 5 heures) se mesure très probablement au temps de ta sauvegarde, affiché à l’écran de sélection. Relève-le à chaque banc. :: Déduit, confiance moyenne. Les sources se contredisent sur le comptage des cinématiques et de la pause : ne compte pas dessus comme marge.
+- [A] Équipement de départ : Emblème Chasseur et Lance soyeuse, rien d’autre. Aucun voyage rapide (Clochevoies) n’est nécessaire sur cette route. :: Sourcé.
+- [A] Dans les dialogues, marteler la touche d’action : « oui » est déjà sélectionné. Pour quitter une boutique, utiliser la touche de soin. Ouvrir puis fermer l’inventaire fait disparaître un nom de zone qui bloque une porte. :: Sourcé.
+- [A] « Quitter et rentrer » : sortir d’une salle puis y revenir saute souvent une animation (cloches, leviers). Le « quitter au menu puis recharger » ne sert que là où l’étape l’indique : il te ramène à ta dernière sauvegarde. :: Sourcé.
+- [A] Reste en français : les coureurs jouent en chinois simplifié pour que le texte défile plus vite, ce qui est inutile pour viser 5 h. :: Déduit.
+- [A] Les bancs : les meilleurs n’en prennent presque aucun, mais pour 5 h il vaut mieux s’asseoir aux points de blocage (Ailebrume, Veuve, cloche n° 5, Dernière Juge, Citadelle, Noyau mécanique, entrée des Grandes Galeries). Chaque fois, regarde ton temps de sauvegarde. :: Sourcé.
+
+## p1 | Mère Forestière et Lance soyeuse | 0:29 | De la première salle jusqu’à la Lance soyeuse (Grotte Verdoyante, Gouffre d’Os, L’Antre). Repères de temps : part du total d’un run d’élite appliquée à 4 h 30, indicatif.
+### Grotte Verdoyante
+> Départ : cellule de réveil, aller à gauche. Arrivée : Gouffre d’Os.
+- Au réveil, attendre environ 17 secondes avant de marteler la touche de soin : Hornet ne se lève qu’à ce moment. :: Sourcé (guide d’Ivy).
+- Aller à gauche et traverser la **Grotte Verdoyante**, avec des rebonds sur l’aiguille. :: Sourcé. Rebond « neutre » (relâcher la direction juste avant de toucher le sol) : B. Version plus simple « haut rebond » : A. Repli : marcher et sauter normalement.
+- Deux cinématiques où Hornet est ralentie : ne pas sauter pendant. :: Sourcé.
+- [B] Vaincre la **Mère Forestière**. :: Sourcé, A. Casser le bulbe vert près de la porte pour la déclencher plus tôt, l’attirer vers la droite, accepter volontairement un coup pour la garder à droite. Elle n’a que deux attaques. Les points de vie ne sont pas chiffrés dans la source (incertain).
+- À la mort du boss, ouvrir l’inventaire pendant le ralenti pour ne pas freiner le ramassage de la cordelette de Perles. Marteler le dialogue de la vieille dame. :: Sourcé.
+### Gouffre d’Os
+> Arrivée : L’Antre, vers la droite.
+- Traverser **Gouffre d’Os** sans parler aux PNJ ni tomber dans le trou, et partir à droite vers L’Antre. :: Sourcé. Repère d’élite : sortie de la Mère Forestière à 2 min 24.
+### L’Antre : de Shakra à la Lance soyeuse
+> Départ : entrée de L’Antre. Arrivée : la statue de tisserande de la Lance soyeuse.
+- [A] **Rebond sur la Volpeste Enragée** : attirer la bête, rebondir sur le haut de sa tête au passage pour atteindre une corniche et éviter une arène. Gain cité : environ 1 min 20. :: Sourcé, B (« quelques semaines avant d’être régulier »). Repli : faire l’arène normale. À revalider sur la version 1.0.30000 (incertain).
+- [A] **Saut de l’ennemi à provoquer** : rebondir sur un cracheur pour monter, puis provoquer l’ennemi (touche Défi, V au clavier), sauter quand il charge et rebondir sur lui. :: Sourcé, A (« l’astuce la plus facile »). Raté : détour d’environ 10 secondes.
+- Passer chez **Shakra**, ignorer la boutique (touche de soin pour en sortir). :: Sourcé.
+- [K] Prendre la **Lance soyeuse** à la statue de tisserande. :: Sourcé. Provoquer à la statue économise 5 à 6 secondes de dialogue.
+- [A] Arriver à la Bête des Cloches avec au moins 7 de soie, idéalement 8 : casser le mur de soie puis frapper un pèlerin, ou tuer l’ennemi en haut. :: Sourcé.
+- [A] Facultatif pour l’aiguille n° 2 : 60 Perles dans les rochers à droite de la salle de Shakra (mur cassable). La relique « Commandement choral » (180 Perles à Clochelle) est derrière un mur cassable à gauche de la salle avant le saut de l’ennemi à provoquer. :: Sourcé, facultatif. Le nom exact de la relique est incertain.
+
+## p2 | Bête des Cloches et Pas rapide | 0:57 | Première cloche, puis le Sentier du Chasseur jusqu’au Pas rapide.
+### Bête des Cloches
+> Arrivée : cloche n° 1 de L’Antre.
+- [B] Vaincre la **Bête des Cloches**. :: Version sûre : combat normal (A), un débutant « perd peu ». Version rapide, « saut de phase » : l’ouvrir avec la Lance soyeuse, enchaîner 4 coups, la faire passer à 80 points de vie puis la tuer au changement de phase. B/C. Au-dessus de 120 points de vie l’attaque « cloche » apparaît : ouvrir avec 4-5 coups sans lance réduit le risque. Sourcé (Ivy, fireb0rn). Repli : combat complet.
+- Après sa mort : Cœur de soie, plateforme du royaume de soie, ramassage du chariot de soie. Puis « quitter au menu et recharger » pour éviter le long réveil de Hornet (environ 3 secondes gagnées). :: Sourcé, A. Précaution déduite : ne quitter qu’après le ramassage.
+- **Cloche n° 1 de L’Antre** : frapper le levier, puis sortir de la salle et y rentrer pour sauter l’animation. :: Sourcé, A. Repère d’élite : 7 min 27. Le lien exact entre ces cloches et les bancs-cloche du jeu est incertain, à vérifier en jouant.
+### Sentier du Chasseur
+> Départ : cloche de L’Antre. Arrivée : l’autel du Pas rapide.
+- Continuer vers la **droite** dans une série de salles à rebonds : salle à Perles, ignorer la cellule de Grindle. :: Sourcé (direction donnée par Ivy). Le détail de chaque salle n’est pas écrit : suivre la carte du jeu (incertain).
+- **Rebond sur le caillou** (Flintstone) : attirer l’ennemi à droite, passer à gauche et rebondir sur lui sous le bord de la plateforme. Quelques secondes gagnées. :: Sourcé, A/B. Repli : contourner.
+- Première **arène des fourmis** du Sentier du Chasseur : Lance soyeuse sur l’ennemi de la 1re vague de près, corps à corps sur les fourmis, milieu de l’arène pour les volants, dernière vague : coup, lance retournée, saut, lance retournée. :: Sourcé, A (arène scriptée, une des plus faciles).
+- Après l’arène : un rebond, courte attente, second rebond en tombant dans la salle suivante, puis ramasser le **Pas rapide**. :: Sourcé. Repère d’élite : 10 min 17. Ensuite : saut-dash (A), rebond-dash (C, le plus rapide). Un dash en l’air remet à zéro le délai de l’aiguille.
+
+## p3 | Lace et Cape flottante | 1:12 | Quais Profonds (Lace, cloche n° 2), puis la Couturière aux Terres Lointaines.
+### Quais Profonds
+> Arrivée : cloche n° 2, juste après le combat.
+- Aller aux **Quais Profonds** : dash, saut par-dessus l’ennemi, levier, ascenseur, rebond-dash à travers une porte, levier, rebond-dash jusqu’à Lace. :: Sourcé (narration d’Ivy). Directions de sortie salle par salle : incertaines.
+- [B] Vaincre **Lace**. :: Sourcé, B. Elle vacille au 11e coup. Un vacillement dans la lave inflige 40 dégâts : la faire vaciller près du bord. Lance soyeuse en sortie de lave. Repli : combat classique. Repère d’élite : 11 min 06.
+- Franchir la grille de droite avant que l’écran ne défile : c’est la **cloche n° 2** (Quais Profonds). :: Sourcé.
+### Terres Lointaines
+> Arrivée : la Couturière, puis la zone de la Quatrième Chorale.
+- Rejoindre la **Couturière** par une chaîne de rebonds et de dashs, marteler le dialogue, répondre oui, puis **s’asseoir au banc** pour fixer la sauvegarde. :: Sourcé.
+- [A] Facultatif : la **Cloche de protection** (Terres Lointaines, à gauche avant l’arène de la Quatrième Chorale) aide à la régularité. :: Sourcé, facultatif.
+- [K] Quête de la **Cape flottante** : tuer 3 à 4 Hokers, frapper les épines en l’air, puis « quitter au menu » quand le texte jaune de quête apparaît et valider au banc. :: Sourcé, B. Repli : tuer un Hoker de plus. Interdit : le « Fourth Chorus Skip Skip » (pause immédiate après le dialogue de la quête). Repère d’élite : 13 min 03.
+
+## p4 | Quatrième Chorale, Sombrevale et Ailebrume | 1:31 | Combat de la Quatrième Chorale, montée vers Sombrevale, cloche n° 3, puis Ailebrume.
+### Quatrième Chorale
+> Arrivée : montée vers Sombrevale.
+- [B] **Combattre la Quatrième Chorale** (recommandé pour viser 5 h). :: Sourcé (guides Steam, GameRant). Aucun conseil de combat dans les sources (incertain). Le « saut de la Quatrième Chorale » (traverser l’arène en vol avec la Cape) existe : B/C avec un soin, C sans soin. Si raté, frapper le boss pour regagner de la soie. Un coureur note qu’on peut la combattre « et avoir quand même le succès ».
+- Remonter les courants d’air : coup vers le haut sur les rochers qui explosent, levier, flotter vers le haut, rebondir sur des ennemis pour sauter le dernier courant. :: Sourcé. GameRant parle d’un trajet jusqu’au Repos du Pèlerin : détail non confirmé (incertain).
+### Sombrevale
+> Arrivée : tour d’Ailebrume.
+- Aller vers la **droite** jusqu’à la cloche, avec l’**arène du Lac Corbo** (la plus facile du jeu, A) pour éviter le saut de corbeaux. :: Sourcé. Le « saut de corbeaux » (rebond sur deux corbeaux) est le plus dur du run : C/D, à éviter pour viser 5 h (déduit). Autre repli : quitter à droite et rentrer.
+- **Cloche n° 3 de Sombrevale** : levier, sortir et rentrer. Le banc de Sombrevale est utilisable, sinon ta dernière sauvegarde est la Couturière. :: Sourcé.
+- Tour de la maison **Halfway Home** (nom anglais, non traduit), 2e arène (Lance soyeuse sur le 1er et le 3e, deux coups sur le 2e), course en rebonds, montée de la tour. :: Sourcé.
+- [B] Vaincre **Ailebrume** (banc juste avant). :: Sourcé, B. Cinq attaques seulement : se placer à gauche pour l’acculer au mur et le punir à la lance. C’est un des trois combats à vraiment répéter. Difficulté réduite au patch 1.0.28497. Repères d’élite : cloche de Sombrevale 14 min 44, Ailebrume 16 min 22.
+
+## p5 | Clochelle, Coquibois et Prise ferme | 1:45 | Clochelle, Coquibois (Sœur Écorceuse), jusqu’à la Prise ferme.
+### Clochelle et Coquibois
+> Arrivée : statue de tisserande de la Prise ferme.
+- Après Ailebrume : quelques rebonds, sauter le trou, entrer à **Clochelle** (cinématique, banc si peu de points de vie). :: Sourcé. La cinématique est passable sur les versions récentes, donc sur 1.0.30000.
+- Premières salles de **Coquibois** : cordelette de 30 Perles sur le chemin direct, petite arène scriptée (3 coups sur le 1er ennemi, lance, etc.), bouton de droite (ouvre la porte du retour), rebonds sur les fleurs. :: Sourcé (Ivy).
+- **Sœur Écorceuse** : ne pas la combattre. Provoquer la bête-fleur pour qu’elle passe sous la plateforme, puis monter à coups et rebondir. Un seul « taunt » suffit sur la version récente. Gain cité : environ 1 minute. :: Sourcé, A. Repli : la combattre (aucun conseil de combat dans les sources, incertain). Elle est plus facile depuis le patch 1.0.28497.
+- Salle suivante : saut avec soin (dash dans un soin et dérive vers le rebord), ou route « tank à la lance » : D. Repli : le chemin normal, non décrit (incertain).
+- [K] Ramasser la **Prise ferme** à la statue de tisserande. :: Sourcé. Repère d’élite : 19 min 01.
+
+## p6 | Veuve, Aiguilline et cloche n° 4 | 2:04 | Veuve, puis l’Aiguilline, la cloche n° 4 de Clochelle et l’aiguille n° 1.
+### Veuve
+> Arrivée : l’ascenseur vers Clochelle.
+- Prendre le chemin du haut (nager en dessous est risqué), casser les murs de cloche (dash à portée maximale puis un coup), ne pas aller trop vite sur le gros ennemi à cloche, prendre un coup volontaire pour tomber plus vite. :: Sourcé.
+- **Saut de l’ennemi ailé** : rebond à travers l’ennemi qui bloque la descente. C. Repli : le combattre ou le contourner (déduit).
+- [B] Vaincre la **Veuve** : commencer par le Défi (V au clavier) et non par le dialogue, se soigner avant, Lance soyeuse sur ses attaques de cloche et de cachette. En phase 2, après 3 attaques de cloche, elle est forcée à un dash ; l’étourdir tôt donne une lance gratuite. :: Sourcé. Un des trois combats à répéter. Repli : banc avant (déduit).
+- Après la Veuve : rêve de l’Aiguilline (plateforme ; la porte s’ouvre à l’Aiguilline de loin), attendre la remontée du levier et de la cloche, « quitter au menu » quand la cloche s’enfonce (A, facultatif), sortir à droite, bouton, ascenseur vers Clochelle. :: Sourcé.
+### Clochelle
+> Arrivée : retour à Coquibois.
+- **Cloche n° 4 de Clochelle** : levier. :: Sourcé. Repère d’élite : 22 min 26.
+- [$] **Aiguille n° 1** gratuite chez le Maître Aiguiseur Plinney (marteler le saut), puis sortir par la gauche. :: Sourcé.
+- [A] Facultatif, conseillé aux débutants : **aiguille n° 2** (vendre le Commandement choral à la chercheuse de reliques, Clochevoie sous Clochelle, rapporter plus tard l’Huile pâle). :: Sourcé, facultatif. Prix exact incertain.
+
+## p7 | Cloche n° 5, Marches Érodées et Dernière Juge | 2:29 | Dernière cloche, Marches Érodées, puis la Dernière Juge : début de l’Acte 2.
+### Coquibois et Marches Érodées
+> Arrivée : porte de la Dernière Juge.
+- Retourner à travers Coquibois jusqu’à la cloche en haut à gauche : **cloche n° 5 de Coquibois**. Farmer 3-4 de soie en chemin et 3-4 dans la petite tour (pour les sauts avec soin), entrer dans la cloche puis ressortir pour sauter l’animation. Banc fortement conseillé. :: Sourcé. Sans banc, la dernière sauvegarde est la Veuve.
+- **Marches Érodées** : choisir le long détour à gauche et en haut. :: Sourcé. Saut n° 1 (Cape entre deux pierres puis soin) : B/C ; saut n° 2 : C/D, « plus dur qu’il n’y paraît ». Repli : sortir à gauche, rentrer, rebondir sur l’ennemi, ou faire le long chemin. Pour 5 h, prendre le repli (déduit).
+- Levier, saut mural sur la plateforme mobile (facultatif), monter vers la droite jusqu’à la Dernière Juge. Un banc-cloche de sécurité est à gauche (l’acheter, quitter et rentrer pour sauter l’animation). :: Sourcé.
+### Dernière Juge
+> Arrivée : Grand Portail, entrée de l’Acte 2.
+- À la porte de la **Dernière Juge**, ne pas parler aux pèlerins : jouer l’Aiguilline (2 de soie) de loin sur le motif du sol. :: Sourcé.
+- [B] Vaincre la **Dernière Juge** (« premier test de niveau »). :: Sourcé. Dégâts doubles (2 masques). Attaque en 2 coups après un dash. Lance soyeuse ou soin pendant ses tourbillons. Phase 2 : cloche explosive, garde tes distances. Phase 3 : 4 vagues de feu, une lance par vague. L’explosion à sa mort inflige 2 dégâts (3 avant le patch actuel) et touche plusieurs fois : éloigne-toi. Repli : banc avant.
+- Sauter la cinématique de la Citadelle et entrer dans la salle des balances : début de l’**Acte 2** (Grand Portail). :: Sourcé. Repère d’élite : 26 min 50, soit environ 55 % du run.
+
+## p8 | Citadelle et Duo-Mécanique | 2:49 | La Citadelle jusqu’au Duo-Mécanique.
+### Citadelle
+> Arrivée : arène du Duo-Mécanique.
+- Salle des balances : le saut mural dépend du framerate (D). Choisir la route de gauche, environ 3 secondes plus lente et facile. Déblayer les gravats, attention à la scie, levier facultatif vers un banc de sécurité. :: Sourcé.
+- Dialogue de Lace : marteler. Rebond sur l’ennemi à gauche pour atteindre le mur latéral (il n’apparaît qu’au premier passage). :: Sourcé.
+- Salle à plateformes temporisées : la sauter en rebondissant sur les piques du mur (C), sinon la traverser normalement. Puis rebond-dash à travers les grands roseaux. :: Sourcé, repli déduit.
+- Suivre le chemin « vert » de la route Cloches, plus rapide : il ouvre aussi un raccourci vers le banc des Grandes Galeries. :: Sourcé.
+- [B] Vaincre le **Duo-Mécanique** (2 dégâts ; barres de points de vie séparées). :: Sourcé. Sauter l’animation du cri en se plaçant là où naît le 1er danseur, ou en prenant le coup (B). Viser le danseur de droite en phases 1 et 2, celui de gauche en phase 3. Se soigner pendant l’attaque plein écran ou entre les phases. Repli : banc de sécurité à la Citadelle. Repère d’élite : 30 min 28.
+- Ne pas faire le « quitter au menu » juste après le combat : les coureurs le font pour sauter une longue animation, mais sans l’outil d’aide au chronométrage, le risque de revenir à une vieille sauvegarde dépasse le gain. :: Déduit.
+- Parler aux trois Gardiens de la triple mélodie. :: Sourcé.
+
+## p9 | Noyau mécanique bas, Voûtes des Murmures et Trobbio | 3:05 | Arène des Voûtes des Murmures puis Trobbio.
+### Noyau mécanique (bas)
+> Arrivée : Voûtes des Murmures.
+- Le banc de gauche est sauté par les meilleurs : pour toi, le prendre. :: Déduit.
+- Dans la salle rotative à leviers, utiliser un **saut-dash** et non un dash vers le bas : sinon un levier est frappé et l’attente est longue. :: Sourcé. Les engrenages infligent 2 dégâts sur la version de sortie ; leur valeur sur 1.0.30000 est incertaine.
+### Voûtes des Murmures
+> Arrivée : salle avant Trobbio.
+- **Arène des Voûtes des Murmures** (5 vagues) : suivre les scripts d’Ivy (ex. vague 1 : 4 coups à gauche, 1 sur le volant, 2 sur le gros puis la lance ; vague 4 la plus dure ; vague 5 : cinq coups puis lance). :: Sourcé, A/B. Repli : improviser.
+- Trois chemins existent dans la salle d’avant Trobbio : le chemin normal, celui de l’**Huile pâle**, et celui de la Cloche de protection (saut de Trobbio, interdit en NMG). Prendre l’Huile pâle est recommandé pour les Grandes Galeries et l’aiguille n° 2. :: Sourcé, facultatif.
+### Trobbio
+> Arrivée : sortie de la salle de Trobbio.
+- [B] Vaincre **Trobbio** : ouverture « à gauche du nuage, sauter quand il monte, aiguille-dash-aiguille » ; tornade (rebondir sur sa tête ou lance de loin) ; boules (coupables) ; attaques sous terre (il ressort toujours de l’explosion finale) ; soigner quand il s’enfonce ou pendant la tornade ; ne pas sauter pendant l’attaque aux boules. :: Sourcé. « Point de blocage » avec beaucoup de hasard (B/C). Aucun temps de victoire dans les sources. Le miroir à griffes après le combat est facultatif.
+- Dans la salle de Trobbio, le levier de gauche et les Clochevoies donnent accès à un banc (et à une Clochevoie vers Clochelle pour l’aiguille n° 2). :: Sourcé. Repère d’élite : sortie de Trobbio à 33 min 23.
+
+## p10 | Fonderie, Serrefil et Mélodie des Archivistes | 3:25 | Descente à la Fonderie, Serrefil, puis la première mélodie.
+### Fonderie
+> Arrivée : Gardien des Voûtes.
+- Après Trobbio : ascenseur (quitter et rentrer pour sauter l’animation), descendre le puits en ouvrant la porte à coups et en frappant l’ascenseur de nouveau. :: Sourcé.
+- **Fonderie** : la lave inflige des dégâts doubles et se déclenche à des positions fixes. Descendre au milieu, rebondir sur le mur de droite. :: Sourcé.
+- [K] Ramasser le **Serrefil** dans sa salle. :: Sourcé. Le saut mural sans Cape de la Fonderie n’existe plus sur 1.0.30000 : la Cape est obligatoire, ce qui est ton cas.
+- Passer un anneau, puis la petite arène du Serrefil : lancer les explosifs contre le mur, volants 2 coups et lance, gros 5 coups et lance. :: Sourcé.
+- Cylindre sacré (argenté) : à gauche de la salle de l’orgue après la sortie du puits (rebond sur un volant, Serrefil, rebond). L’apporter au **Gardien des Voûtes** pour la **Mélodie des Archivistes**. :: Sourcé. Le nom français du cylindre est incertain. Repères d’élite : arène du Serrefil 35 min 16, mélodie 37 min 01.
+
+## p11 | Noyau mécanique haut et Mélodie des Architectes | 3:37 | Salle de l’Architecte, deuxième mélodie.
+### Noyau mécanique (haut)
+> Arrivée : salle de l’Architecte.
+- Revenir par la salle à leviers (saut-dash seulement) vers le haut du Noyau mécanique. C’est un des passages de plateformes les plus durs du run. Version « consistante » de fireb0rn (Serrefil à l’entrée, etc.) : C. Repli : les versions prévues, plus lentes ; banc de sécurité en haut, lent d’accès. :: Sourcé.
+### Salle de l’Architecte
+> Arrivée : retour aux Grandes Galeries.
+- **Énigme de l’Architecte** : solution fixe (nombre de coups sur chaque cylindre, tableau dans la vidéo d’Ivy). Marcher dans le sens horaire est plus simple. Quitter et rentrer pour sauter les animations, puis se tenir sur le bouton final. Descendre en chute libre avec 2-3 rebonds neutres. :: Sourcé. Le tableau lui-même n’est pas reproduit ici (incertain) : regarde la vidéo. Repère d’élite : Mélodie des Architectes à 39 min 07.
+
+## p12 | Grandes Galeries et Mélodie des Maestrels | 3:58 | Arène des Grandes Galeries (11 vagues), troisième mélodie.
+### Avant l’arène
+> Arrivée : entrée de l’arène.
+- Rejoindre les **Grandes Galeries** par le raccourci ouvert sur la route Cloches. Serrefil et dash à travers les grands roseaux (le Serrefil donne des images d’invincibilité). Banc d’entrée des Grandes Galeries conseillé ; un second banc de sécurité est à droite de l’arène. :: Sourcé.
+- « Pixel divin » (rebond et dash vers le bas entre deux piques) : D. Repli : le chemin normal avec le second anneau. :: Sourcé.
+- [A] Équipement conseillé avant l’arène : Mouchetilles (Métal artisanal acheté à Gouffre d’Os), à utiliser sur la dernière vague ; Huile pâle ; 6 masques si possible (3 éclats en plus, d’après Kaskozhuk). :: Sourcé, facultatif. L’endroit où ramasser les éclats est incertain.
+### Arène des Grandes Galeries
+> Arrivée : Mélodie des Maestrels.
+- [B] **Arène des Grandes Galeries** (11 vagues), « le point de blocage le plus dur du run » et « de loin la plus aléatoire ». Principes d’Ivy : regrouper les volants pour que la Lance soyeuse en touche plusieurs, occuper un point d’apparition pour regrouper les ennemis, rebonds à images d’invincibilité, coup vers le haut sous les volants. Vague 6 : mini-boss (garder 4 de soie). Vague 11 : deux « clappers » (2 dégâts, superposer les lances). :: Sourcé. C en version rapide. En version prudente, prends le temps de te soigner (les meilleurs jouent à 2 masques pour garder leurs réglages, pas toi). Repli : banc d’entrée ou de droite après un échec.
+- Après la 3e mélodie (**Mélodie des Maestrels**) : « quitter au menu » vers le haut du Noyau mécanique (sauvegarde forcée), ou banc. La cinématique de Lace suit. :: Sourcé.
+- [!] Repère de sécurité : à ce moment, il te reste environ 30 minutes de marge sur les 5 h. :: Sourcé (Kaskozhuk). Repères d’élite : entrée de l’arène 40 min 25, mélodie 42 min 57.
+
+## p13 | Berceau : Lace et Mère Supérieure Soie | 4:30 | Lace, puis le combat final.
+### Lace et fin
+> Arrivée : début de la cinématique de fin.
+- [B] Vaincre **Lace** (Berceau). :: Sourcé. L’arène commence juste après la cinématique (marteler le texte). Frapper en fin d’attaque pour provoquer un saut. Lance soyeuse après chaque attaque punissable. Serrefil sur Lace puis dash vers le bas et attaque au vacillement et au changement de phase (C en version complète). Phase 2 : chaîne de dashs à l’issue aléatoire, sauter par-dessus les attaques au sol. Le triple coup est plus difficile depuis la correction de la zone de touche. Lace ne peut pas être évitée. Repère d’élite : 16 secondes.
+- Après le combat : grimper, marteler le dialogue, saut mural sur le mur de gauche. **Ne pas prendre le banc** (même distance de remontée après une mort), Serrefil vers la plateforme. :: Sourcé.
+- [B] Vaincre la **Mère Supérieure Soie**. :: Sourcé. Une attaque à 3 dégâts (mort en 2 coups à faible nombre de masques). Serrefil vers le boss, aiguille-dash-aiguille-dash, Lance soyeuse dans les creux entre les toiles. En phase 2, des rochers tombent et elle peut s’y cacher (10 à 15 secondes perdues) : la Lance soyeuse l’atteint quand même. Repère d’élite : 42 secondes.
+- [!] **Fin** : le chronomètre des classements s’arrête au début de la cinématique de fin, n’importe quelle fin convient et l’Acte 3 n’est pas nécessaire. Pour le succès Speedrunner, la fin de l’Acte 2 suffit très probablement : vérifie que la notification du succès apparaît. :: Déduit, confiance moyenne.
+`;
 </script>
 <script>
 /* Récapitulatif de l'accueil : fonctions pures, sans accès à la page (testées dans tests/home.test.js). */
@@ -1263,7 +1446,14 @@ var HOME = (function () {
     if (last) { r.last = last.actual; r.est = last.actual + (o.final - last.target); r.margin = LIMIT - r.est; }
     return r;
   }
-  return { LIMIT: LIMIT, hm: hm, a30: a30 };
+  /* o : { runs: [{ t }] en secondes, limit en secondes, done, total }. Le record est le plus petit temps ; l'objectif est « moins de » : strictement sous la limite. */
+  function speed(o) {
+    var runs = o.runs || [], best = null;
+    runs.forEach(function (r) { if (r.t > 0 && (best == null || r.t < best)) best = r.t; });
+    var done = o.done || 0, total = o.total || 0;
+    return { best: best, count: runs.length, gap: best == null ? null : o.limit - best, under: best != null && best < o.limit, done: done, total: total, pct: total ? Math.min(100, done / total * 100) : 0 };
+  }
+  return { LIMIT: LIMIT, hm: hm, a30: a30, speed: speed };
 })();
 if (typeof module !== 'undefined') module.exports = HOME;
 
@@ -1298,43 +1488,72 @@ var RT = parseRoute(ROUTE_SRC, ITEMS), PHASES = RT.phases;
 var STEPS = {}, ORDER = [];
 PHASES.forEach(function (p) { p.groups.forEach(function (g) { g.steps.forEach(function (s) { STEPS[s.id] = s; ORDER.push(s.id); }); }); });
 if (RT.errors.length) { try { console.warn(RT.errors); } catch (e) {} }
-var FINAL_TARGET = 28 * 60;
+var FINAL_TARGET = 28 * 60, LIMIT = 30 * 60;
+var RTS = parseRoute(ROUTE_SPEED, {});
+if (RTS.errors.length) { try { console.warn(RTS.errors); } catch (e) {} }
+var CUR = null, CURIMG = IMGS, CURGM = GMAPS;
 
 /* ---------- État ---------- */
 var LS = 'silksong100.v1', LSUI = 'silksong100.ui.v1';
 var S = { d: {}, u: 0 };
 var LST = 'silksong100.t.v1';
 var T = { v: {}, ts: {}, u: 0 };
-var UI = { open: {}, og: {}, hide: false, q: '', tab: 'route', wake: false, openCat: {}, det: false, im: true };
+var UI = { open: {}, og: {}, hide: false, q: '', tab: 'route', wake: false, openCat: {}, det: false, im: true, po: {} };
+/* Deux catégories ont une route et une progression chacune : le 100 % en moins de 30 h et le speedrun. */
+var PROF = {
+  a30: { name: '100 % en moins de 30 h', ls: 'silksong100.v1', lst: 'silksong100.t.v1', limit: 30 * 60, final: 28 * 60, tabs: ['route', 'coll', 'time', 'info'] },
+  speed: { name: 'Speedrun en moins de 5 h', ls: 'silksong100.sp.v1', lst: 'silksong100.sp.t.v1', limit: 5 * 60, final: 270, tabs: ['route', 'time', 'runs', 'info'] }
+};
+var PD = {};
+var LSR = 'silksong100.runs.v1', RUNS = [];
 function lsGet(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
 function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-function normState(s) {
+function normState(s, steps) {
   var d = {};
-  (Array.isArray(s.d) ? s.d : Object.keys(s.d || {})).forEach(function (id) { if (STEPS[id]) d[id] = 1; });
+  steps = steps || STEPS;
+  (Array.isArray(s.d) ? s.d : Object.keys(s.d || {})).forEach(function (id) { if (steps[id]) d[id] = 1; });
   return { d: d, u: +s.u || 0 };
 }
-function tmap() { var o = {}; Object.keys(T.v).forEach(function (k) { if (T.v[k]) o[k] = T.v[k]; }); return o; }
-function serial() { return { d: Object.keys(S.d), t: tmap(), u: S.u }; }
+function tmap(TT) { var o = {}; TT = TT || T; Object.keys(TT.v).forEach(function (k) { if (TT.v[k]) o[k] = TT.v[k]; }); return o; }
+function serialOf(key) { var X = key === CUR ? { S: S, T: T } : { S: PD[key].S, T: PD[key].T }; return { d: Object.keys(X.S.d), t: tmap(X.T), u: X.S.u }; }
+function serial() { return serialOf(CUR); }
 function tval(id) { return T.v[id] || ''; }
 function saveT() { lsSet(LST, T); }
 /* Fusionne des temps venus d’ailleurs : pour chaque phase, la saisie la plus récente gagne. */
-function mergeT(r) {
+function mergeT(r, TT) {
   var ch = false;
+  TT = TT || T;
   if (!r || typeof r.v !== 'object' || !r.v) return false;
   Object.keys(r.v).forEach(function (k) {
     if (!/^p\d+$/.test(k)) return;
-    var rt = r.ts && +r.ts[k] || 0, lt = T.ts[k] || 0;
-    if (!(k in T.v) || rt > lt) { if (T.v[k] !== r.v[k] || lt !== rt) ch = true; T.v[k] = String(r.v[k] || ''); T.ts[k] = rt; }
+    var rt = r.ts && +r.ts[k] || 0, lt = TT.ts[k] || 0;
+    if (!(k in TT.v) || rt > lt) { if (TT.v[k] !== r.v[k] || lt !== rt) ch = true; TT.v[k] = String(r.v[k] || ''); TT.ts[k] = rt; }
   });
   return ch;
 }
-function loadLocal() {
-  var s = lsGet(LS); if (s) S = normState(s);
-  var tl = lsGet(LST); if (tl) mergeT(tl);
-  if (s && s.t && typeof s.t === 'object') { var o = {}; for (var k in s.t) o[k] = s.t[k]; mergeT({ v: o, ts: {} }); }
-  var u = lsGet(LSUI); if (u) for (var k in u) UI[k] = u[k];
+/* Temps de jeu des runs de speedrun : [{ id, t (secondes), d (date ISO), n (note) }]. */
+function normRuns(r) {
+  var out = [];
+  (Array.isArray(r) ? r : []).forEach(function (x) {
+    var t = Math.round(+x.t);
+    if (x && t > 0 && t < 100 * 3600) out.push({ id: String(x.id || ('r' + out.length + t)), t: t, d: String(x.d || '').slice(0, 10), n: String(x.n || '').slice(0, 80) });
+  });
+  return out;
 }
-function saveUI() { lsSet(LSUI, UI); }
+function saveRuns() { lsSet(LSR, RUNS); }
+function loadLocal() {
+  Object.keys(PROF).forEach(function (key) {
+    var P = PROF[key], D = PD[key], s = lsGet(P.ls);
+    D.S = s ? normState(s, D.steps) : { d: {}, u: 0 };
+    D.T = { v: {}, ts: {}, u: 0 };
+    var tl = lsGet(P.lst); if (tl) mergeT(tl, D.T);
+    if (s && s.t && typeof s.t === 'object') { var o = {}; for (var k in s.t) o[k] = s.t[k]; mergeT({ v: o, ts: {} }, D.T); }
+  });
+  var u = lsGet(LSUI); if (u) for (var k in u) UI[k] = u[k];
+  if (!UI.po || typeof UI.po !== 'object') UI.po = {};
+  RUNS = normRuns(lsGet(LSR));
+}
+function saveUI() { if (CUR) UI.po[CUR] = { open: UI.open, og: UI.og }; lsSet(LSUI, UI); }
 function touch() { S.u = Date.now(); lsSet(LS, serial()); schedulePush(); }
 function touchT(id, val) { T.v[id] = val; T.ts[id] = Date.now(); T.u = T.ts[id]; saveT(); lsSet(LS, serial()); schedulePushT(); }
 
@@ -1342,7 +1561,7 @@ function touchT(id, val) { T.v[id] = val; T.ts[id] = Date.now(); T.u = T.ts[id];
 function stats() {
   var pct = 0, cat = {}, ph = {};
   CATS.forEach(function (c) { cat[c.id] = { done: 0, total: c.items.length, pct: 0 }; });
-  Object.keys(ITEMS).forEach(function (id) {
+  if (CUR === 'a30') Object.keys(ITEMS).forEach(function (id) {
     var it = ITEMS[id];
     if (it.step && S.d[it.step]) { cat[it.cat].done++; if (it.pct > 0) { pct += it.pct; cat[it.cat].pct += it.pct; } }
   });
@@ -1351,7 +1570,9 @@ function stats() {
     p.groups.forEach(function (g) { g.steps.forEach(function (s) { n++; if (S.d[s.id]) d++; }); });
     ph[p.id] = { done: d, total: n };
   });
-  return { pct: pct, cat: cat, ph: ph, done: Object.keys(S.d).length, total: ORDER.length };
+  var done = Object.keys(S.d).length;
+  if (CUR !== 'a30') pct = ORDER.length ? done / ORDER.length * 100 : 0;
+  return { pct: pct, cat: cat, ph: ph, done: done, total: ORDER.length };
 }
 
 /* ---------- Construction : route ---------- */
@@ -1384,6 +1605,13 @@ function zoneLink(title) {
 function gkOf(id) { return id.replace(/-\d+$/, ''); }
 var PH = {};
 PHASES.forEach(function (p) { PH[p.id] = p; });
+function indexRoute(phases) {
+  var st = {}, or = [], ph = {};
+  phases.forEach(function (p) { ph[p.id] = p; p.groups.forEach(function (g) { g.steps.forEach(function (s) { st[s.id] = s; or.push(s.id); }); }); });
+  return { phases: phases, steps: st, order: or, ph: ph };
+}
+PD.a30 = { phases: PHASES, steps: STEPS, order: ORDER, ph: PH, img: IMGS, gm: GMAPS };
+PD.speed = indexRoute(RTS.phases); PD.speed.img = {}; PD.speed.gm = {};
 var CHEV = '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 /* Découpe une étape en : pastilles, phrase principale, gain, et contenu replié (détails, lieu, images). */
 function stepInfo(s) {
@@ -1398,7 +1626,7 @@ function stepInfo(s) {
   if (sp[1]) x += '<p class="para">' + rich(sp[1]) + '</p>';
   if (s.detail) x += '<p class="para note">' + rich(s.detail) + '</p>';
   if (it && it.hint) x += '<p class="para loc"><b>Où :</b> ' + esc(it.hint) + '</p>';
-  var ims = IMGS[s.id], n = 0;
+  var ims = CURIMG[s.id], n = 0;
   if (ims) {
     ims.forEach(function (c) { n += c[1]; });
     x += '<button type="button" class="sbtn imgb" data-act="img" aria-expanded="false">Voir les images du guide (' + n + ')</button><div class="imgbox" hidden></div>';
@@ -1427,7 +1655,7 @@ function buildRoute() {
       '<span class="pbar"><i></i></span></button>' +
       '<div class="pbody" id="pb-' + p.id + '">' + (p.intro ? '<details class="pintro"><summary>À propos de cette phase</summary><p>' + fmt(p.intro) + '</p></details>' : ''));
     p.groups.forEach(function (g, gi) {
-      var zl = zoneLink(g.title), mids = GMAPS[p.id + '-' + (gi + 1)], mh = '', gk = p.id + '-' + (gi + 1);
+      var zl = zoneLink(g.title), mids = CURGM[p.id + '-' + (gi + 1)], mh = '', gk = p.id + '-' + (gi + 1);
       if (mids) mh = '<div class="mapbox">' + mids.map(function (m) {
         return '<figure class="mapfig"><img class="gimg gmap" loading="lazy" decoding="async" alt="Carte du parcours (guide source)" src="map/' + m + '.jpg"><figcaption>Carte du guide source (en anglais) : la ligne rouge montre le chemin. Touche pour agrandir.</figcaption></figure>';
       }).join('') + '</div>';
@@ -1512,13 +1740,15 @@ function buildColl() {
 /* ---------- Construction : temps ---------- */
 function buildTime() {
   var h = ['<div class="tsync" id="t-sync"></div><div class="status" id="t-status">Note ton temps de jeu (celui de l’écran de sélection de sauvegarde) à la fin de chaque phase pour voir ton avance ou ton retard.</div><div class="card"><h2>Repères de temps</h2>' +
-    '<p style="color:var(--muted);font-size:14px;margin-top:0">Ces limites sont des repères de ce guide, pas des valeurs du jeu : elles totalisent 28 h pour garder 2 h de marge sous les 30 h. L’auteur du guide source a fini en 18 h environ.</p>'];
+    (CUR === 'speed'
+      ? '<p style="color:var(--muted);font-size:14px;margin-top:0">Ces repères sont <b>indicatifs</b> : ils reprennent la part du temps total d’un run d’élite à chaque jalon, appliquée à ' + hm(FINAL_TARGET) + ' pour garder ' + hm(LIMIT - FINAL_TARGET) + ' de marge sous les ' + (LIMIT / 60) + ' h. Aucune source ne donne de jalons pour un joueur normal.</p>'
+      : '<p style="color:var(--muted);font-size:14px;margin-top:0">Ces limites sont des repères de ce guide, pas des valeurs du jeu : elles totalisent 28 h pour garder 2 h de marge sous les 30 h. L’auteur du guide source a fini en 18 h environ.</p>')];
   PHASES.forEach(function (p) {
     if (!p.target) return;
     h.push('<div class="trow"><span class="tname">' + esc(p.title) + '</span>' +
       '<span class="tfield"><input class="tin th" data-ph="' + p.id + '" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="h" aria-label="Heures : ' + esc(p.title) + '">h' +
       '<input class="tin tm" data-ph="' + p.id + '" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="min" aria-label="Minutes : ' + esc(p.title) + '"></span>' +
-      '<span class="tsub">Limite ' + hm(parseHM(p.target)) + ' <span class="delta" data-d="' + p.id + '"></span></span></div>');
+      '<span class="tsub">' + (CUR === 'speed' ? 'Repère ' : 'Limite ') + hm(parseHM(p.target)) + ' <span class="delta" data-d="' + p.id + '"></span></span></div>');
   });
   h.push('</div>');
   $('#tab-time').innerHTML = h.join('');
@@ -1550,16 +1780,14 @@ var LINKS = [
   ['Guide Steam « List of Requirements » (liste des 100 %)', 'https://steamcommunity.com/sharedfiles/filedetails/?id=3567581746'],
   ['Millenium : 100 %', 'https://www.millenium.org/guide/427241.html']
 ];
-function buildInfo() {
+function buildInfoA30() {
   var rows = CATS.filter(function (c) { return c.pct > 0; }).map(function (c) {
     return '<tr><td>' + esc(c.label) + '</td><td class="n">' + c.items.length + '</td><td class="n">' + pctFr(c.pct) + ' %</td><td class="n">' + pctFr(c.items.length * c.pct) + ' %</td></tr>';
   }).join('');
   var fix = FIXES.map(function (f) { return '<tr class="fixrow"><td>' + esc(f[0]) + '</td><td>' + esc(f[1]) + '</td><td>' + esc(f[2]) + '</td></tr>'; }).join('');
   var links = LINKS.map(function (l) { return '<li><a href="' + l[1] + '" target="_blank" rel="noopener">' + esc(l[0]) + '</a></li>'; }).join('');
   $('#tab-info').innerHTML =
-    '<div class="card"><h2>Affichage</h2><p style="color:var(--muted);font-size:14px;margin-top:0">Par défaut, chaque étape ne montre que sa phrase principale. Touche son texte pour voir les détails, le lieu et les images.</p>' +
-    '<div class="row-actions"><button class="chip" id="det" type="button" aria-pressed="false">Détails fermés</button><button class="chip" id="imt" type="button" aria-pressed="true">Images affichées</button>' +
-    '<a class="chip" href="https://mapgenie.io/hollow-knight-silksong/maps/pharloom" target="_blank" rel="noopener">Carte interactive ↗</a></div></div>' +
+    viewCard() +
     '<div class="card"><h2>Comment l’utiliser</h2><ul><li>La carte <b>Maintenant</b>, en haut de Route, montre la prochaine étape. Touche <b>Fait</b> pour passer à la suivante. Le reste de la route est dessous, rangé par phase puis par zone.</li>' +
     '<li>L’onglet <b>100 %</b> liste les 124 éléments qui comptent, avec leur nom anglais et leur emplacement. Cocher un élément coche l’étape correspondante.</li>' +
     '<li>Dans la liste, touche la case pour cocher, ou le texte d’une étape pour voir ses détails et ses images (touche une image pour l’agrandir). Chaque zone a un bloc « Trajet et carte de la zone ».</li>' +
@@ -1582,15 +1810,49 @@ function buildInfo() {
     '<div class="tbl"><table><thead><tr><th>Avant (faux)</th><th>Maintenant</th><th>Anglais</th></tr></thead><tbody>' + fix + '</tbody></table></div>' +
     '<p style="font-size:14px;color:var(--muted)">Précisions : les Fins « Reine tisserande » et « Enfant tourmenté » ne comptent pas pour le 100 % et sont ignorées ici. L’Emblème Sorcière demande en revanche d’être infecté puis soigné (Rite de réincarnation, Chirurgie parasitaire).</p></div>' +
     '<div class="card"><h2>Sources</h2><ul>' + links + '</ul><p style="font-size:14px;color:var(--muted)">Images : captures et tracés du guide Steam de <b>vivictor</b> (certains tracés par <b>TubbinSauce</b>), reprises ici pour ton usage personnel. Les noms visibles sur les images sont en anglais : le guide les donne en français dans le texte.</p></div>' +
-    '<div class="card"><h2>Mes données</h2><p id="sync-txt" style="color:var(--muted);font-size:14px">Sauvegarde sur cet appareil.</p>' +
+    dataCard();
+}
+function viewCard() {
+  return '<div class="card"><h2>Affichage</h2><p style="color:var(--muted);font-size:14px;margin-top:0">Par défaut, chaque étape ne montre que sa phrase principale. Touche son texte pour voir les détails, le lieu et les images.</p>' +
+    '<div class="row-actions"><button class="chip" id="det" type="button" aria-pressed="false">Détails fermés</button><button class="chip" id="imt" type="button" aria-pressed="true">Images affichées</button>' +
+    '<a class="chip" href="https://mapgenie.io/hollow-knight-silksong/maps/pharloom" target="_blank" rel="noopener">Carte interactive ↗</a></div></div>';
+}
+function dataCard() {
+  return '<div class="card"><h2>Mes données</h2><p id="sync-txt" style="color:var(--muted);font-size:14px">Sauvegarde sur cet appareil.</p>' +
     '<div class="row-actions"><button class="chip" id="wake" type="button" aria-pressed="false">Garder l’écran allumé</button>' +
     '<button class="chip" id="export" type="button">Copier mes données</button><button class="chip" id="import" type="button">Importer des données</button><button class="chip" id="reset" type="button">Tout effacer (cases et temps)</button></div>' +
     '<textarea class="out" id="outbox" readonly hidden aria-label="Données exportées"></textarea>' +
     '<div id="inwrap" hidden><p style="color:var(--muted);font-size:14px;margin:10px 0 4px">Colle ici le texte copié avec « Copier mes données » depuis l’autre version de l’appli. Il remplace tes cases et tes temps actuels.</p>' +
     '<textarea class="out" id="inbox" aria-label="Données à importer" placeholder="{&quot;d&quot;:[…],&quot;t&quot;:{…}}"></textarea>' +
     '<div class="row-actions"><button class="chip" id="indo" type="button">Importer maintenant</button></div><p id="inmsg" style="font-size:14px;margin:6px 0 0"></p></div></div>';
+}
+function buildInfoSpeed() {
+  var links = SPEED_LINKS.map(function (l) { return '<li><a href="' + l[1] + '" target="_blank" rel="noopener">' + esc(l[0]) + '</a></li>'; }).join('');
+  $('#tab-info').innerHTML =
+    viewCard() +
+    '<div class="card"><h2>Comment l’utiliser</h2><ul><li>La carte <b>Maintenant</b>, en haut de Route, montre la prochaine étape. Touche <b>Fait</b> pour passer à la suivante.</li>' +
+    '<li>Chaque étape dit en détail sa <b>fiabilité</b> : <i>sourcé</i> (dit par un coureur ou une source citée), <i>déduit</i> (raisonnement à partir des sources) ou <i>incertain</i> (à confirmer en jouant). Les cotes <b>A à D</b> estiment la difficulté d’une astuce : A facile, D à éviter.</li>' +
+    '<li>L’onglet <b>Temps</b> contient un repère par phase, à comparer à ton temps de sauvegarde. L’onglet <b>Runs</b> garde tes temps de fin et ton record.</li></ul></div>' +
+    '<div class="card"><h2>Ce que la route ne sait pas encore</h2><ul>' +
+    '<li>Aucun coureur n’a écrit la route des meilleurs temps : celle-ci est <b>reconstruite</b> à partir de guides vidéo, des temps intermédiaires de la communauté et de guides Steam. Les sorties de salle ne sont pas toutes données : suis la carte du jeu.</li>' +
+    '<li>Les repères de temps sont <b>indicatifs</b> : ils reprennent la part du temps total d’un run d’élite à chaque jalon, appliquée à 4 h 30. Aucune source ne donne de jalons pour un joueur normal.</li>' +
+    '<li>Le minuteur du succès <b>Speedrunner</b> n’est pas confirmé (temps de la sauvegarde probable). Relève-le à chaque banc.</li>' +
+    '<li>Les astuces sont celles de la catégorie sans glitch majeur. La liste des interdits a changé plusieurs fois : pour un run officiel, relis les règles de speedrun.com.</li></ul></div>' +
+    '<div class="card"><h2>Sources</h2><ul>' + links + '</ul></div>' +
+    dataCard();
+}
+function buildInfo() {
+  if (CUR === 'speed') buildInfoSpeed(); else buildInfoA30();
   $('#wake').setAttribute('aria-pressed', UI.wake ? 'true' : 'false');
 }
+var SPEED_LINKS = [
+  ['Règles de la catégorie sans glitch majeur (speedrun.com)', 'https://github.com/hk-speedrunning/Silksong-Rules/blob/main/nmg_rules.md'],
+  ['Classements Silksong (speedrun.com)', 'https://www.speedrun.com/silksong'],
+  ['Guide de la route Cloches par Ivy (vidéos)', 'https://www.youtube.com/watch?v=-vVCdHi3YSU'],
+  ['Guide de la route Cloches par fireb0rn (vidéo)', 'https://www.youtube.com/watch?v=7YhUO7e4xRo'],
+  ['Temps intermédiaires de la communauté (ComSoB)', 'https://docs.google.com/spreadsheets/d/1-Hy5k_h9dBUUPlwh_I14K-DEwGcNdVQ0utI-KX56d8c'],
+  ['Succès Speedrunner (Steam)', 'https://steamcommunity.com/stats/1030300/achievements/']
+];
 
 /* ---------- Rafraîchissement ---------- */
 var CNT = {};
@@ -1656,8 +1918,8 @@ function refreshTime() {
   var box = $('#t-status'); if (!box) return;
   if (!last) { box.className = 'status'; box.textContent = 'Note ton temps de jeu (celui de l’écran de sélection de sauvegarde) à la fin de chaque phase pour voir ton avance ou ton retard.'; return; }
   var est = lastMin + (FINAL_TARGET - parseHM(last.target));
-  box.className = 'status ' + (est <= 30 * 60 ? 'ok' : 'late');
-  box.textContent = 'Fin estimée : ' + hm(est) + (est <= 30 * 60 ? ' (sous les 30 h, marge ' + hm(30 * 60 - est) + ')' : ' (dépasse les 30 h de ' + hm(est - 30 * 60) + ' : accélère)');
+  box.className = 'status ' + (est <= LIMIT ? 'ok' : 'late');
+  box.textContent = 'Fin estimée : ' + hm(est) + (est <= LIMIT ? ' (sous les ' + LIMIT / 60 + ' h, marge ' + hm(LIMIT - est) + ')' : ' (dépasse les ' + LIMIT / 60 + ' h de ' + hm(est - LIMIT) + ' : accélère)');
 }
 
 /* ---------- Actions ---------- */
@@ -1694,6 +1956,7 @@ function resume() {
   li.classList.remove('flash'); void li.offsetWidth; li.classList.add('flash');
 }
 function showTab(t) {
+  if (CUR && PROF[CUR].tabs.indexOf(t) < 0) t = 'route';
   UI.tab = t; saveUI();
   $$('.tab').forEach(function (s) { s.classList.toggle('on', s.id === 'tab-' + t); });
   $$('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false'); });
@@ -1732,7 +1995,7 @@ function errCode(e) { return e && (e.code || e.message) ? String(e.code || e.mes
 function timeSync() {
   var el = $('#t-sync'); if (!el) return;
   var n = Object.keys(tmap()).length, txt, cls = '';
-  if (!tcloud.ref) txt = 'Compte non connecté : tes ' + n + ' temps sont gardés sur cet appareil seulement.';
+  if (!tcloud.ref) txt = 'Sauvegarde sur cet appareil seulement : ' + (n === 0 ? 'aucun temps noté' : n === 1 ? '1 temps noté' : n + ' temps notés') + '.';
   else if (tcloud.err) { txt = 'Enregistrement sur ton compte en échec (' + tcloud.err + ') : réessai automatique. Tes temps restent gardés sur cet appareil.'; cls = 'late'; }
   else if (tcloud.dirty || tcloud.busy) txt = 'Enregistrement sur ton compte en cours…';
   else if (tcloud.last) { txt = 'Temps enregistrés sur ton compte à ' + hhmm(tcloud.last) + ' (' + n + ' saisis).'; cls = 'ok'; }
@@ -1745,12 +2008,12 @@ function refreshTimeUI() {
   buildTime(); refreshTime();
 }
 function schedulePush(now) {
-  if (!cloud.ref) return;
+  if (!cloud.ref || CUR !== 'a30') return;
   cloud.dirty = true; setSync('pending');
   clearTimeout(cloud.timer); cloud.timer = setTimeout(push, now ? 50 : 1200);
 }
 function push() {
-  if (!cloud.ref || cloud.busy || !cloud.dirty) return Promise.resolve();
+  if (!cloud.ref || cloud.busy || !cloud.dirty || CUR !== 'a30') return Promise.resolve();
   cloud.busy = true; cloud.dirty = false;
   return cloud.ref.set(serial()).then(function () { setSync(cloud.dirty ? 'pending' : 'ok'); }, function () { cloud.dirty = true; setSync('error'); clearTimeout(cloud.timer); cloud.timer = setTimeout(push, 8000); }).then(function () {
     cloud.busy = false; if (cloud.dirty && cloud.state !== 'error') schedulePush();
@@ -1759,11 +2022,11 @@ function push() {
 /* Les temps ont leur propre document, écrit tout de suite à chaque saisie et réessayé tant qu’il échoue. */
 function schedulePushT(now) {
   tcloud.dirty = true; tcloud.err = ''; timeSync();
-  if (!tcloud.ref) return;
+  if (!tcloud.ref || CUR !== 'a30') return;
   clearTimeout(tcloud.timer); tcloud.timer = setTimeout(pushT, now ? 0 : 400);
 }
 function pushT() {
-  if (!tcloud.ref || tcloud.busy || !tcloud.dirty) return Promise.resolve();
+  if (!tcloud.ref || tcloud.busy || !tcloud.dirty || CUR !== 'a30') return Promise.resolve();
   tcloud.busy = true; tcloud.dirty = false;
   var snap = { v: T.v, ts: T.ts, u: T.u };
   return tcloud.ref.set(snap).then(function () {
@@ -1774,7 +2037,7 @@ function pushT() {
   }).then(function () { tcloud.busy = false; if (tcloud.dirty && !tcloud.err) pushT(); timeSync(); });
 }
 function pullT() {
-  if (!tcloud.ref) return Promise.resolve();
+  if (!tcloud.ref || CUR !== 'a30') return Promise.resolve();
   return tcloud.ref.get().then(function (snap) {
     var ch = false;
     if (snap.exists) ch = mergeT(snap.data() || {});
@@ -1785,7 +2048,7 @@ function pullT() {
   }, function (e) { tcloud.err = errCode(e); timeSync(); });
 }
 function pull() {
-  if (!cloud.ref) return Promise.resolve();
+  if (!cloud.ref || CUR !== 'a30') return Promise.resolve();
   return cloud.ref.get().then(function (snap) {
     if (snap.exists) {
       var r = snap.data() || {}, ru = +r.u || 0;
@@ -1836,19 +2099,37 @@ function openLB(src) { $('#lbimg').src = src; $('#lb').hidden = false; $('#lb').
 function closeLB() { if ($('#lb').hidden) return; $('#lb').hidden = true; $('#lbimg').removeAttribute('src'); }
 
 /* ---------- Événements ---------- */
+function importProfile(key, dd, tt) {
+  var D = PD[key], cur = key === CUR, ids = Array.isArray(dd) ? dd : Object.keys(dd || {}), d = {}, n = 0, tn = 0, now_ = Date.now();
+  var Sx = cur ? S : D.S, Tx = cur ? T : D.T;
+  ids.forEach(function (id) { if (D.steps[id]) { d[id] = 1; n++; } });
+  Sx.d = d; Sx.u = now_;
+  if (tt && typeof tt === 'object') Object.keys(tt).forEach(function (k) {
+    var m = /^p\d+$/.test(k) ? parseHM(tt[k]) : null;
+    if (m != null) { Tx.v[k] = Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2); Tx.ts[k] = now_; Tx.u = now_; tn++; }
+  });
+  lsSet(PROF[key].ls, serialOf(key)); lsSet(PROF[key].lst, Tx);
+  if (cur && key === 'a30') { schedulePush(); schedulePushT(true); }
+  return { n: n, tn: tn };
+}
+function exportAll() { var o = serialOf('a30'); o.sp = serialOf('speed'); o.runs = RUNS; return o; }
 function importData() {
   var msg = $('#inmsg'), raw = $('#inbox').value.trim(), o;
   function fail(t) { msg.textContent = t; msg.style.color = 'var(--accent)'; }
   if (!raw) return fail('Colle d’abord le texte copié.');
   try { o = JSON.parse(raw); } catch (e) { return fail('Ce texte n’est pas valide : copie-le de nouveau en entier.'); }
-  if (!o || (!Array.isArray(o.d) && typeof o.d !== 'object')) return fail('Ce texte ne contient pas de progression.');
-  var ids = Array.isArray(o.d) ? o.d : Object.keys(o.d || {}), d = {}, n = 0;
-  ids.forEach(function (id) { if (STEPS[id]) { d[id] = 1; n++; } });
-  S.d = d; touch();
-  var tn = 0;
-  if (o.t && typeof o.t === 'object') Object.keys(o.t).forEach(function (k) { if (/^p\d+$/.test(k) && parseHM(o.t[k]) != null) { var m = parseHM(o.t[k]); touchT(k, Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2)); tn++; } });
-  lastGK = null; now.id = null; buildTime(); refreshAll(); autoGroups(true);
-  msg.style.color = 'var(--ok)'; msg.textContent = 'Importé : ' + n + ' étapes cochées et ' + tn + ' temps.'; $('#inbox').value = '';
+  var hasA = !!o && (Array.isArray(o.d) || (!!o.d && typeof o.d === 'object')), hasS = !!o && !!o.sp && typeof o.sp === 'object', hasR = !!o && Array.isArray(o.runs);
+  if (!hasA && !hasS && !hasR) return fail('Ce texte ne contient pas de progression.');
+  var r = { a: { n: 0, tn: 0 }, s: { n: 0, tn: 0 }, runs: 0 };
+  if (hasA) r.a = importProfile('a30', o.d, o.t);
+  if (hasS) r.s = importProfile('speed', o.sp.d, o.sp.t);
+  if (hasR) { RUNS = normRuns(o.runs); saveRuns(); r.runs = RUNS.length; }
+  lastGK = null; now.id = null; buildTime(); buildRuns(); refreshAll(); autoGroups(true);
+  var parts = [];
+  if (hasA) parts.push(r.a.n + ' étapes du 100 % et ' + r.a.tn + ' temps');
+  if (hasS) parts.push(r.s.n + ' étapes du speedrun et ' + r.s.tn + ' repères');
+  if (hasR) parts.push(r.runs + (r.runs > 1 ? ' runs' : ' run'));
+  msg.style.color = 'var(--ok)'; msg.textContent = 'Importé : ' + parts.join(', ') + '.'; $('#inbox').value = '';
 }
 function resetClick(b) {
   var kind = b.getAttribute('data-reset'), ph = b.getAttribute('data-ph'), base = b.getAttribute('data-label') || b.textContent;
@@ -1875,7 +2156,7 @@ function bind() {
     if (ib) {
       var x = ib.closest('.xtra'), box = $('.imgbox', x), show = box.hidden;
       if (show && !box.firstChild) {
-        box.innerHTML = IMGS[x.getAttribute('data-sid')].map(function (c) {
+        box.innerHTML = CURIMG[x.getAttribute('data-sid')].map(function (c) {
           return '<img class="gimg" loading="lazy" decoding="async" alt="Capture du guide pour cette étape" src="img/' + c[0] + '.jpg">';
         }).join('');
       }
@@ -1906,8 +2187,6 @@ function bind() {
     else if (a === 'back') { var i = nowIndex(now.id); if (i > 0) toggleStep(ORDER[i - 1], false); }
     else if (a === 'list') resume();
   });
-  $('#det').addEventListener('click', function () { UI.det = !UI.det; saveUI(); applyView(); });
-  $('#imt').addEventListener('click', function () { UI.im = !UI.im; saveUI(); applyView(); });
   $('#lb').addEventListener('click', closeLB);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLB(); });
   $('#tab-coll').addEventListener('change', function (e) {
@@ -1941,11 +2220,13 @@ function bind() {
   $('#f-all').addEventListener('click', function () { setFilter(false); });
   $('#tab-info').addEventListener('click', function (e) {
     var b = e.target.closest('.chip'); if (!b) return;
+    if (b.id === 'det') { UI.det = !UI.det; saveUI(); applyView(); return; }
+    if (b.id === 'imt') { UI.im = !UI.im; saveUI(); applyView(); return; }
     if (b.id === 'wake') { UI.wake = !UI.wake; saveUI(); b.setAttribute('aria-pressed', UI.wake ? 'true' : 'false'); wake(UI.wake); }
     if (b.id === 'import') { var w = $('#inwrap'); w.hidden = !w.hidden; if (!w.hidden) $('#inbox').focus(); return; }
     if (b.id === 'indo') { importData(); return; }
     if (b.id === 'export') {
-      var txt = JSON.stringify(serial()), box = $('#outbox');
+      var txt = JSON.stringify(exportAll()), box = $('#outbox');
       box.value = txt; box.hidden = false; box.focus(); box.select();
       try { navigator.clipboard.writeText(txt).then(function () { b.textContent = 'Copié'; }, function () {}); } catch (err) {}
     }
@@ -1966,25 +2247,84 @@ function bind() {
   $('#hcards').addEventListener('click', function (e) {
     var c = e.target.closest('.hcard'); if (!c) return;
     var cat = c.getAttribute('data-cat');
-    if (cat === 'a30') showView('cat'); else showView('soon', cat);
+    if (PROF[cat]) showView('cat', cat); else showView('soon', cat);
   });
   $('#menu').addEventListener('click', function () { showView('home'); });
   $('#soon-back').addEventListener('click', function () { showView('home'); });
+  $('#tab-runs').addEventListener('click', runsClick);
+}
+
+/* ---------- Runs de speedrun ---------- */
+var SPEED_LIMIT = 5 * 3600;
+function fmtDur(sec) {
+  var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60, p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+  return (h ? h + ' h ' + p2(m) : m) + ' min ' + p2(s) + ' s';
+}
+function gapText(sec) { var d = SPEED_LIMIT - sec; return d >= 0 ? fmtDur(d) + ' sous l’objectif' : fmtDur(-d) + ' au-dessus de l’objectif'; }
+function fmtDate(d) {
+  var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(d || ''); if (!m) return '';
+  try { return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return d; }
+}
+function todayISO() { var t = new Date(); return t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2); }
+function buildRuns() {
+  var box = $('#tab-runs'); if (!box) return;
+  var sp = HOME.speed({ runs: RUNS, limit: SPEED_LIMIT });
+  var h = '<div class="card"><h2>Objectif : moins de 5 h</h2><p class="rnote">Temps de jeu de la sauvegarde, celui de l’écran de sélection. C’est le succès <b>Speedrunner</b>.</p>';
+  if (sp.best == null) h += '<p class="rbest none">Aucun temps enregistré</p>';
+  else h += '<p class="rbest"><span>Record</span><b>' + fmtDur(sp.best) + '</b></p><p class="rgap ' + (sp.under ? 'ok' : 'late') + '">' + esc(gapText(sp.best)) + '</p>';
+  h += '</div><div class="card"><h2>Ajouter un temps</h2><div class="radd">' +
+    '<span class="tfield"><input class="tin" id="r-h" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" placeholder="h" aria-label="Heures">h' +
+    '<input class="tin" id="r-m" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="min" aria-label="Minutes">min' +
+    '<input class="tin" id="r-s" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="s" aria-label="Secondes">s</span>' +
+    '<input class="search" id="r-n" type="text" maxlength="80" autocomplete="off" placeholder="Note (facultatif)" aria-label="Note">' +
+    '<button class="btn" id="r-add" type="button">Enregistrer ce temps</button><p id="r-msg" class="rmsg" aria-live="polite"></p></div></div>';
+  h += '<div class="card"><h2>Mes runs</h2>';
+  if (!RUNS.length) h += '<p class="rnote">Pas encore de run. Ajoute le temps affiché sur ta sauvegarde à la fin de chaque partie.</p>';
+  else {
+    var list = RUNS.slice().reverse();
+    h += '<ul class="rlist">' + list.map(function (r) {
+      return '<li><div><b>' + fmtDur(r.t) + '</b>' + (r.t === sp.best ? ' <span class="rtag">Record</span>' : '') +
+        '<span class="rsub">' + esc(fmtDate(r.d)) + (r.n ? ' · ' + esc(r.n) : '') + ' · ' + esc(gapText(r.t)) + '</span></div>' +
+        '<button type="button" class="rbtn rdel" data-rid="' + esc(r.id) + '">Supprimer</button></li>';
+    }).join('') + '</ul>';
+  }
+  box.innerHTML = h + '</div>';
+}
+function runsClick(e) {
+  var b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'r-add') {
+    var hs = $('#r-h').value.replace(/\D/g, ''), ms = $('#r-m').value.replace(/\D/g, ''), ss = $('#r-s').value.replace(/\D/g, ''), msg = $('#r-msg');
+    var t = (+hs || 0) * 3600 + (+ms || 0) * 60 + (+ss || 0);
+    if (!t || +ms > 59 || +ss > 59) { msg.textContent = 'Entre un temps valide (minutes et secondes de 0 à 59).'; msg.className = 'rmsg late'; return; }
+    RUNS.push({ id: 'r' + Date.now().toString(36), t: t, d: todayISO(), n: $('#r-n').value.trim() });
+    saveRuns(); buildRuns(); return;
+  }
+  if (b.classList.contains('rdel')) {
+    if (b.getAttribute('data-arm') !== '1') {
+      b.setAttribute('data-arm', '1'); b.textContent = 'Confirmer'; b.classList.add('arm');
+      setTimeout(function () { b.removeAttribute('data-arm'); b.classList.remove('arm'); b.textContent = 'Supprimer'; }, 4000);
+    } else {
+      var id = b.getAttribute('data-rid'); RUNS = RUNS.filter(function (r) { return r.id !== id; }); saveRuns(); buildRuns();
+    }
+  }
 }
 
 /* ---------- Accueil (menu des catégories) ---------- */
 var SOON = {
-  speed: ['Speedrun en moins de 5 h', 'Objectif : finir le jeu en moins de 5 h (succès Speedrunner).'],
   steel: ['Âme d’acier à 100 %', 'Objectif : finir le jeu à 100 % en mode Âme d’acier, sans mourir (succès Steel Heart).']
 };
 function homeCard(cat, title, body) {
   return '<button type="button" class="hcard" data-cat="' + cat + '"><p class="hct">' + esc(title) + '</p>' + body + '<span class="hgo" aria-hidden="true"></span></button>';
 }
+function homeBar(pct) { return '<div class="hbar" aria-hidden="true"><i style="width:' + pct + '%"></i></div>'; }
 function buildHome() {
-  var st = stats();
+  var A = CUR === 'a30' ? { S: S, T: T } : { S: PD.a30.S, T: PD.a30.T };
+  var Z = CUR === 'speed' ? { S: S, T: T } : { S: PD.speed.S, T: PD.speed.T };
+  var apct = 0;
+  Object.keys(ITEMS).forEach(function (id) { var it = ITEMS[id]; if (it.step && A.S.d[it.step] && it.pct > 0) apct += it.pct; });
   var r = HOME.a30({
-    pct: st.pct, done: st.done, total: st.total, final: FINAL_TARGET,
-    cps: PHASES.map(function (p) { return { target: p.target ? parseHM(p.target) : null, actual: parseHM(tval(p.id)) }; })
+    pct: apct, done: Object.keys(A.S.d).length, total: PD.a30.order.length, final: PROF.a30.final,
+    cps: PD.a30.phases.map(function (p) { return { target: p.target ? parseHM(p.target) : null, actual: parseHM(A.T.v[p.id]) }; })
   });
   var tl, tc = 'hl';
   if (r.last == null) tl = 'Aucun temps noté pour l’instant';
@@ -1992,35 +2332,52 @@ function buildHome() {
     tl = 'Dernier temps ' + HOME.hm(r.last) + ' · fin estimée ' + HOME.hm(r.est) + (r.margin >= 0 ? ' (marge ' + HOME.hm(r.margin) + ')' : ' (dépasse de ' + HOME.hm(-r.margin) + ')');
     tc += r.margin >= 0 ? ' ok' : ' late';
   }
-  var h = homeCard('a30', '100 % en moins de 30 h',
-    '<p class="hcn"><b>' + pctFr(r.pct) + '<small>%</small></b><span>' + r.done + '/' + r.total + ' étapes</span></p>' +
-    '<div class="hbar" aria-hidden="true"><i style="width:' + r.pct + '%"></i></div><p class="' + tc + '">' + esc(tl) + '</p>');
-  ['speed', 'steel'].forEach(function (c) {
-    h += homeCard(c, SOON[c][0], '<p class="hl">' + esc(SOON[c][1]) + '</p><span class="htag">En préparation</span>');
-  });
+  var h = homeCard('a30', PROF.a30.name,
+    '<p class="hcn"><b>' + pctFr(r.pct) + '<small>%</small></b><span>' + r.done + '/' + r.total + ' étapes</span></p>' + homeBar(r.pct) + '<p class="' + tc + '">' + esc(tl) + '</p>');
+  var sp = HOME.speed({ runs: RUNS, limit: SPEED_LIMIT, done: Object.keys(Z.S.d).length, total: PD.speed.order.length });
+  var sl = sp.best == null ? 'Aucun temps enregistré · objectif : moins de 5 h' : 'Record ' + fmtDur(sp.best) + ' · ' + gapText(sp.best);
+  h += homeCard('speed', PROF.speed.name,
+    '<p class="hcn"><b>' + pctFr(Math.round(sp.pct)) + '<small>%</small></b><span>route : ' + sp.done + '/' + sp.total + ' étapes</span></p>' + homeBar(sp.pct) +
+    '<p class="hl' + (sp.best == null ? '' : sp.under ? ' ok' : ' late') + '">' + esc(sl) + '</p>');
+  h += homeCard('steel', SOON.steel[0], '<p class="hl">' + esc(SOON.steel[1]) + '</p><span class="htag">En préparation</span>');
   $('#hcards').innerHTML = h;
 }
 var VIEW = 'home';
-function showView(v, cat) {
+function showView(v, key) {
   VIEW = v;
   $('#home').hidden = v !== 'home'; $('#soon').hidden = v !== 'soon'; $('#cat').hidden = v !== 'cat';
   if (v === 'home') buildHome();
-  else if (v === 'soon') { $('#soon-t').textContent = SOON[cat][0]; $('#soon-s').textContent = SOON[cat][1]; }
-  else { now.id = null; refreshAll(); showTab(UI.tab || 'route'); }
+  else if (v === 'soon') { $('#soon-t').textContent = SOON[key][0]; $('#soon-s').textContent = SOON[key][1]; }
+  else {
+    if (key && key !== CUR) useProfile(key); else { now.id = null; refreshAll(); }
+    showTab(UI.tab || 'route');
+  }
   window.scrollTo(0, 0);
+}
+/* Passe d'une catégorie à l'autre : chacune a sa route, ses cases, ses temps et ses zones ouvertes. */
+function useProfile(key) {
+  if (CUR) { PD[CUR].S = S; PD[CUR].T = T; UI.po[CUR] = { open: UI.open, og: UI.og }; }
+  var P = PROF[key], D = PD[key], po = UI.po[key];
+  if (!po) po = key === 'a30' ? { open: UI.open || {}, og: UI.og || {} } : { open: {}, og: {} };
+  CUR = key; PHASES = D.phases; STEPS = D.steps; ORDER = D.order; PH = D.ph; CURIMG = D.img; CURGM = D.gm;
+  S = D.S; T = D.T; LS = P.ls; LST = P.lst; FINAL_TARGET = P.final; LIMIT = P.limit;
+  UI.open = po.open || {}; UI.og = po.og || {}; UI.po[key] = { open: UI.open, og: UI.og };
+  UI.q = ''; $('#q').value = '';
+  lastGK = null; now.id = null;
+  $('.bname').textContent = P.name;
+  $$('.tabs button').forEach(function (b) { b.hidden = P.tabs.indexOf(b.getAttribute('data-tab')) < 0; });
+  buildRoute(); buildTime(); buildInfo(); buildRuns();
+  PHASES.forEach(function (p) { if (UI.open[p.id]) setOpen(p.id, true); });
+  var first = firstUndone();
+  if (first && !PHASES.some(function (p) { return UI.open[p.id]; })) setOpen(STEPS[first].phase, true);
+  Object.keys(UI.og).forEach(function (gk) { if (UI.og[gk]) setGroup(gk, true, true); });
+  refreshAll(); autoGroups(true); applyView();
 }
 
 /* ---------- Démarrage ---------- */
 loadLocal();
-buildRoute(); buildColl(); buildTime(); buildInfo(); bind();
-$('#q').value = UI.q || '';
-PHASES.forEach(function (p) { if (UI.open[p.id]) setOpen(p.id, true); });
-var first = firstUndone();
-if (first && !PHASES.some(function (p) { return UI.open[p.id]; })) setOpen(STEPS[first].phase, true);
-Object.keys(UI.og).forEach(function (gk) { if (UI.og[gk]) setGroup(gk, true, true); });
-refreshAll(); autoGroups(true); if (UI.q) applyFilter();
-applyView();
-showTab(UI.tab || 'route');
+buildColl(); bind();
+useProfile('a30');
 showView('home');
 if (UI.wake) wake(true);
 initCloud();
