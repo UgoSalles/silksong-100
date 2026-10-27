@@ -1,5 +1,5 @@
 // Service worker : l'appli s'ouvre hors ligne ; les images du guide se mettent en cache à la première vue.
-const SHELL = 'silksong-shell-202610271906';
+const SHELL = 'silksong-shell-202610271940';
 const IMGS = 'silksong-img-v1';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/hornet-192.png', 'icons/hornet-512.png', 'icons/hornet-180.png'];
 self.addEventListener('install', e => {
