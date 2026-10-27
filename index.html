@@ -192,6 +192,7 @@ main { padding-block: 14px 110px; }
 @keyframes flash { 0%, 60% { background: var(--accent-soft); } 100% { background: transparent; } }
 
 .rrow { padding: 6px 0 10px; }
+.rrow.top { padding: 2px 0 8px; }
 .rrow.end { padding-block: 4px 16px; }
 .rbtn { appearance: none; background: none; border: 1.5px dashed var(--line); color: var(--muted); font-weight: 700; font-size: 13.5px; padding: 8px 12px; min-height: 40px; border-radius: 10px; cursor: pointer; }
 .rbtn.arm { border-style: solid; border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
@@ -1357,7 +1358,7 @@ function buildRoute() {
       '<svg class="pchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
       '<span class="pmeta"><span class="pc">0/0</span>' + esc(targetTxt(p.target)) + '<span class="pt"></span></span>' +
       '<span class="pbar"><i></i></span></button>' +
-      '<div class="pbody" id="pb-' + p.id + '">' + (p.intro ? '<details class="pintro"><summary>À propos de cette phase</summary><p>' + fmt(p.intro) + '</p></details>' : ''));
+      '<div class="pbody" id="pb-' + p.id + '"><div class="rrow top"><button class="rbtn" type="button" data-reset="phase-done" data-ph="' + p.id + '">Tout cocher dans cette phase</button></div>' + (p.intro ? '<details class="pintro"><summary>À propos de cette phase</summary><p>' + fmt(p.intro) + '</p></details>' : ''));
     p.groups.forEach(function (g, gi) {
       var zl = zoneLink(g.title), mids = GMAPS[p.id + '-' + (gi + 1)], mh = '', gk = p.id + '-' + (gi + 1);
       if (mids) mh = '<div class="mapbox">' + mids.map(function (m) {
@@ -1780,17 +1781,19 @@ function resetClick(b) {
   var kind = b.getAttribute('data-reset'), ph = b.getAttribute('data-ph'), base = b.getAttribute('data-label') || b.textContent;
   b.setAttribute('data-label', base);
   if (b.getAttribute('data-arm') !== '1') {
-    var n = kind === 'phase' ? PH[ph].groups.reduce(function (t, g) { return t + g.steps.filter(function (s) { return S.d[s.id]; }).length; }, 0) : Object.keys(S.d).length;
-    if (!n) { b.textContent = 'Rien à remettre à zéro'; setTimeout(function () { b.textContent = base; }, 2000); return; }
-    b.setAttribute('data-arm', '1'); b.textContent = 'Confirmer : décocher ' + n + ' étape' + (n > 1 ? 's' : '') + ' (touche encore)';
+    var chk = kind === 'phase' ? function (s) { return S.d[s.id]; } : function (s) { return !S.d[s.id]; };
+    var n = kind === 'all' ? Object.keys(S.d).length : PH[ph].groups.reduce(function (t, g) { return t + g.steps.filter(chk).length; }, 0);
+    if (!n) { b.textContent = kind === 'phase-done' ? 'Tout est déjà coché' : 'Rien à remettre à zéro'; setTimeout(function () { b.textContent = base; }, 2000); return; }
+    b.setAttribute('data-arm', '1'); b.textContent = 'Confirmer : ' + (kind === 'phase-done' ? 'cocher ' : 'décocher ') + n + ' étape' + (n > 1 ? 's' : '') + ' (touche encore)';
     b.classList.add('arm');
     clearTimeout(b._t); b._t = setTimeout(function () { b.removeAttribute('data-arm'); b.classList.remove('arm'); b.textContent = base; }, 5000);
     return;
   }
   clearTimeout(b._t); b.removeAttribute('data-arm'); b.classList.remove('arm'); b.textContent = base;
-  if (kind === 'phase') PH[ph].groups.forEach(function (g) { g.steps.forEach(function (s) { delete S.d[s.id]; }); });
+  if (kind === 'phase-done') PH[ph].groups.forEach(function (g) { g.steps.forEach(function (s) { S.d[s.id] = 1; }); });
+  else if (kind === 'phase') PH[ph].groups.forEach(function (g) { g.steps.forEach(function (s) { delete S.d[s.id]; }); });
   else { S.d = {}; UI.og = {}; lastGK = null; $$('.group').forEach(function (g) { g.classList.remove('open'); }); }
-  touch(); now.id = null; refreshAll(); if (kind === 'all') { autoGroups(true); window.scrollTo({ top: 0 }); }
+  touch(); now.id = null; refreshAll(); if (kind === 'phase-done') autoGroups(false); if (kind === 'all') { autoGroups(true); window.scrollTo({ top: 0 }); }
 }
 function bind() {
   $('#route-list').addEventListener('change', function (e) {
