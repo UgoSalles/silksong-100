@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/hornet-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/hornet-180.png">
-<style>:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Silksong 100 %</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +46,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg); overscroll-behavior-y: none; }
 body { background: var(--bg); color: var(--ink); font: 16px/1.45 var(--font-body); margin: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 button, input, textarea { font: inherit; color: inherit; }
 b { font-weight: 700; }
@@ -55,7 +55,7 @@ a { color: var(--accent); }
 [hidden] { display: none !important; }
 
 /* En-tête collant */
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top { position: sticky; top: 0; padding-top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
 .top .wrap { padding-block: 10px 12px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
 .brand { grid-column: 1 / -1; grid-row: 1; font: 700 13px/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
 .sync { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); display: inline-block; }
@@ -1595,8 +1595,14 @@ function refreshTime() {
 /* ---------- Actions ---------- */
 function toggleStep(id, on) {
   if (!STEPS[id]) return;
+  var li = $('#s-' + id), nx = li && li.nextElementSibling, ly = li ? li.getBoundingClientRect().top : 0, ny = nx ? nx.getBoundingClientRect().top : 0;
   if (on) S.d[id] = 1; else delete S.d[id];
   touch(); refreshAll();
+  /* iPhone : la carte « Maintenant » et les compteurs changent de hauteur ; on garde la case touchée au même endroit de l'écran. */
+  var d = 0;
+  if (li && li.offsetHeight) d = li.getBoundingClientRect().top - ly;
+  else if (nx && nx.offsetHeight) d = nx.getBoundingClientRect().top - ny;
+  if (d) window.scrollBy(0, d);
 }
 function setOpen(id, open) {
   var el = $('#ph-' + id); if (!el) return;
