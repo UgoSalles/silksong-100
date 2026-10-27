@@ -1,5 +1,5 @@
 // Service worker : l'appli s'ouvre hors ligne ; les images du guide se mettent en cache à la première vue.
-const SHELL = 'silksong-shell-202610271525';
+const SHELL = 'silksong-shell-202610271528';
 const IMGS = 'silksong-img-v1';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => {
