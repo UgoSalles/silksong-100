@@ -100,6 +100,13 @@ a { color: var(--accent); }
 .brand .bname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brand .sync { margin-left: auto; }
 
+/* Assistant de la Brume */
+.mist[open] > summary { margin-bottom: 10px; }
+.mcount { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 6px 0 10px; font-size: 22px; font-variant-numeric: tabular-nums; }
+.mdots { display: flex; gap: 8px; } .mdots i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface2); } .mdots i.on { background: var(--ok); border-color: var(--ok); }
+.mrooms { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.table-note { font-size: 13px; }
+td.ok { color: var(--ok); } td.late { color: var(--accent); }
 /* Speedrun : runs et record */
 .rnote { margin: 0 0 8px; color: var(--muted); font-size: 14.5px; }
 .rbest { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 4px 0; }
@@ -1361,7 +1368,7 @@ const ROUTE_SPEED = `## p0 | Avant de partir | - | Route de speedrun tracée sur
 > Départ : entrée de la Brume. Arrivée : l’Orgue de Ventilation.
 - [!] **La Brume** est un labyrinthe aux sorties tirées au hasard. :: Il faut l’**Aiguilline** dans l’inventaire. Jouer l’Aiguilline près des papillons de lumière et les suivre. Compte 6 bonnes sorties (5 salles au minimum grâce au bonus du « croisement »). Une mauvaise sortie, une chute, une mort ou un « quitter au menu » remet le compteur à zéro. Sourcé (guide de la Brume d’oxbox). Un échec coûte environ 3 minutes en course ; les coureurs l’appellent « le plus gros point de remise à zéro du run ».
 - Salles 1 et 2 : jouer l’Aiguilline pour les papillons. Salle 3 : prendre n’importe quelle sortie à gauche ou à droite : elle mène au couloir vide du « croisement ». Le traverser (ne jamais y revenir), puis résoudre la salle 5. En salle 6, prendre une sortie de droite (une seule est valide, sauf salles M5 et M8). :: Sourcé, stratégie des meilleurs. Les spectres apparaissent dès la salle 2 (jusqu’à 2, puis 3, 4, 5) : environ 6 coups d’aiguille chacun, ou attaque, attaque et lance.
-- Garder sous la main la **table des sorties** de chaque salle de la Brume. :: Sorties par salle (G gauche, D droite, H haut, B bas, HG/BG/HD/BD en diagonale) : M1 G/H/D ; M2 HG/BG/H/D/B ; M3 HG/BG/H/D ; M4 G/HG/HD/D/B ; M5 G/H/HD/BD/B ; M6 G/H/D ; M7 G/H/B (pas de sortie à droite : ne pas la faire en dernière salle) ; M8 G/H/HD/BD. La troisième sortie est toujours une sortie de côté. Sourcé (doc d’oxbox). Depuis la version 1.0.29139, on ne peut plus revenir dans la salle qu’on vient de résoudre sans perdre son avancée (le « juggling » est corrigé).
+- Garder sous la main la **table des sorties** de chaque salle de la Brume : ouvre l’assistant de la Brume, en haut de cette zone. :: Sorties par salle (gauche haut/bas = sur le mur de gauche, plafond gauche/droit = deux sorties au plafond) : M1 gauche, plafond, droite ; M2 gauche haut, gauche bas, plafond, droite, sol ; M3 gauche haut, gauche bas, plafond, droite ; M4 gauche, plafond gauche, plafond droit, droite, sol ; M5 gauche, plafond, droite haut, droite bas, sol ; M6 gauche, plafond, droite ; M7 gauche, plafond, sol (pas de sortie à droite : ne pas la faire en dernière salle) ; M8 gauche, plafond, droite haut, droite bas. La troisième sortie est toujours une sortie de côté. Sourcé (doc d’oxbox).
 ### Fantôme (« Phantom »)
 > Départ : sortie de la Brume. Arrivée : la Citadelle.
 - Sortie de la Brume : **Orgue de Ventilation**. :: Sourcé.
@@ -1456,7 +1463,33 @@ var HOME = (function () {
     var done = o.done || 0, total = o.total || 0, last = runs.length ? runs[runs.length - 1] : null;
     return { best: best, last: last ? last.t : null, lastDate: last ? last.d || '' : '', count: runs.length, gap: best == null ? null : o.limit - best, under: best != null && best < o.limit, done: done, total: total, pct: total ? Math.min(100, done / total * 100) : 0 };
   }
-  return { LIMIT: LIMIT, hm: hm, a30: a30, speed: speed };
+  /* Temps par phase : sp = { phase: "h:mm" } en cumulé ; ids = phases dans l'ordre. Un segment est la différence entre deux cumuls voisins (en minutes), ou null si l'un des deux manque. */
+  function toMin(v) { var m = /^\s*(\d{1,2})\s*[:hH.]\s*(\d{1,2})\s*$/.exec(String(v == null ? '' : v)); return m && +m[2] < 60 ? +m[1] * 60 + +m[2] : null; }
+  function segments(sp, ids) {
+    var out = {}, prev = 0;
+    ids.forEach(function (id) {
+      var c = toMin(sp && sp[id]);
+      out[id] = c != null && prev != null ? c - prev : null;
+      if (c != null) prev = c; else prev = null;
+    });
+    return out;
+  }
+  function bestRun(runs) { var b = null; (runs || []).forEach(function (r) { if (r.t > 0 && (b == null || r.t < b.t)) b = r; }); return b; }
+  /* Compare la dernière run au record : une ligne par phase où les deux segments sont connus. diff > 0 : tu as perdu du temps. */
+  function compare(runs, ids) {
+    runs = (runs || []).filter(function (r) { return r.sp && Object.keys(r.sp).length; });
+    var best = bestRun(runs), last = runs.length ? runs[runs.length - 1] : null;
+    if (!best || !last || last === best) return { rows: [], worst: null, last: last, best: best };
+    var a = segments(last.sp, ids), b = segments(best.sp, ids), rows = [], worst = null;
+    ids.forEach(function (id) {
+      if (a[id] == null || b[id] == null) return;
+      var r = { id: id, last: a[id], best: b[id], diff: a[id] - b[id] };
+      rows.push(r);
+      if (r.diff > 0 && (!worst || r.diff > worst.diff)) worst = r;
+    });
+    return { rows: rows, worst: worst, last: last, best: best };
+  }
+  return { LIMIT: LIMIT, hm: hm, a30: a30, speed: speed, toMin: toMin, segments: segments, bestRun: bestRun, compare: compare };
 })();
 if (typeof module !== 'undefined') module.exports = HOME;
 
@@ -1495,6 +1528,11 @@ var FINAL_TARGET = 28 * 60, LIMIT = 30 * 60;
 var RTS = parseRoute(ROUTE_SPEED, {});
 if (RTS.errors.length) { try { console.warn(RTS.errors); } catch (e) {} }
 var CUR = null, CURIMG = IMGS, CURGM = GMAPS;
+/* Vignettes de ton dessin (build/sp_maps), une par zone de la route de speedrun. */
+var SPEED_MAPS = { 'p0-1': ['sp-all'], 'p1-1': ['sp-p1-1'], 'p1-3': ['sp-p1-3'], 'p1-4': ['sp-p1-4'], 'p2-1': ['sp-p2-1'], 'p2-2': ['sp-p2-2'],
+  'p3-1': ['sp-p3-1'], 'p3-2': ['sp-p3-2'], 'p3-3': ['sp-p3-3'], 'p3-4': ['sp-p3-4'], 'p4-1': ['sp-p4-1'], 'p4-2': ['sp-p4-2'], 'p4-3': ['sp-p4-3'],
+  'p4-4': ['sp-p4-4'], 'p4-5': ['sp-p4-5'], 'p5-1': ['sp-p5-1'], 'p5-2': ['sp-p5-2'], 'p5-3': ['sp-p5-3'], 'p5-4': ['sp-p5-4'], 'p6-1': ['sp-p6-1'],
+  'p7-1': ['sp-p7-1'], 'p7-2': ['sp-p7-2'], 'p8-1': ['sp-p8-1'], 'p8-2': ['sp-p8-1'], 'p9-1': ['sp-p9-1'] };
 
 /* ---------- État ---------- */
 var LS = 'silksong100.v1', LSUI = 'silksong100.ui.v1';
@@ -1540,7 +1578,11 @@ function normRuns(r) {
   var out = [];
   (Array.isArray(r) ? r : []).forEach(function (x) {
     var t = Math.round(+x.t);
-    if (x && t > 0 && t < 100 * 3600) out.push({ id: String(x.id || ('r' + out.length + t)), t: t, d: String(x.d || '').slice(0, 10), n: String(x.n || '').slice(0, 80) });
+    if (x && t > 0 && t < 100 * 3600) {
+      var sp = {};
+      if (x.sp && typeof x.sp === 'object') Object.keys(x.sp).forEach(function (k) { if (/^p\d+$/.test(k) && parseHM(x.sp[k]) != null) sp[k] = String(x.sp[k]); });
+      out.push({ id: String(x.id || ('r' + out.length + t)), t: t, d: String(x.d || '').slice(0, 10), n: String(x.n || '').slice(0, 80), sp: sp });
+    }
   });
   return out;
 }
@@ -1617,7 +1659,7 @@ function indexRoute(phases) {
   return { phases: phases, steps: st, order: or, ph: ph };
 }
 PD.a30 = { phases: PHASES, steps: STEPS, order: ORDER, ph: PH, img: IMGS, gm: GMAPS };
-PD.speed = indexRoute(RTS.phases); PD.speed.img = {}; PD.speed.gm = {};
+PD.speed = indexRoute(RTS.phases); PD.speed.img = {}; PD.speed.gm = SPEED_MAPS;
 var CHEV = '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 /* Découpe une étape en : pastilles, phrase principale, gain, et contenu replié (détails, lieu, images). */
 function stepInfo(s) {
@@ -1663,13 +1705,14 @@ function buildRoute() {
     p.groups.forEach(function (g, gi) {
       var zl = zoneLink(g.title), mids = CURGM[p.id + '-' + (gi + 1)], mh = '', gk = p.id + '-' + (gi + 1);
       if (mids) mh = '<div class="mapbox">' + mids.map(function (m) {
-        return '<figure class="mapfig"><img class="gimg gmap" loading="lazy" decoding="async" alt="Carte du parcours (guide source)" src="map/' + m + '.jpg"><figcaption>Carte du guide source (en anglais) : la ligne rouge montre le chemin. Touche pour agrandir.</figcaption></figure>';
+        return '<figure class="mapfig"><img class="gimg gmap" loading="lazy" decoding="async" alt="Carte du parcours (guide source)" src="map/' + m + '.jpg"><figcaption>' + (CUR === 'speed' ? 'Ton dessin, découpé autour de cette zone (carte en allemand). Touche pour agrandir.' : 'Carte du guide source (en anglais) : la ligne rouge montre le chemin. Touche pour agrandir.') + '</figcaption></figure>';
       }).join('') + '</div>';
       var view = '';
       if (g.trip || mh || zl) {
         view = '<details class="gview"><summary>Trajet et carte de la zone</summary>' + (g.trip ? '<p class="trip">' + rich(g.trip) + '</p>' : '') + mh +
           (zl ? '<p class="gwiki"><a href="' + zl + '" target="_blank" rel="noopener">Page du wiki pour cette zone ↗</a></p>' : '') + '</details>';
       }
+      if (CUR === 'speed' && /^La Brume/.test(g.title)) view = '<details class="gview mist"><summary>Assistant de la Brume</summary><div id="mist-body"></div></details>' + view;
       h.push('<div class="group" id="g-' + gk + '" data-gk="' + gk + '"><button class="ghead" type="button" data-gk="' + gk + '" aria-expanded="false">' +
         '<span class="gname">' + esc(g.title) + '</span><span class="gcount">0/' + g.steps.length + '</span>' + CHEV + '</button>' +
         '<div class="gbody">' + view + '<ul class="steps">');
@@ -1681,41 +1724,94 @@ function buildRoute() {
   $('#route-list').innerHTML = h.join('');
 }
 
+/* ---------- Assistant de la Brume (route de speedrun) ---------- */
+/* Sorties de chaque salle d'après le guide de la Brume d'oxbox : UL gauche haut, LL gauche bas, UR droite haut, LR droite bas, TL/TR plafond gauche/droit, T plafond, B sol. */
+var MIST_ROOMS = {
+  M1: ['gauche', 'plafond', 'droite'], M2: ['gauche (haut)', 'gauche (bas)', 'plafond', 'droite', 'sol'], M3: ['gauche (haut)', 'gauche (bas)', 'plafond', 'droite'],
+  M4: ['gauche', 'plafond gauche', 'plafond droit', 'droite', 'sol'], M5: ['gauche', 'plafond', 'droite (haut)', 'droite (bas)', 'sol'],
+  M6: ['gauche', 'plafond', 'droite'], M7: ['gauche', 'plafond', 'sol'], M8: ['gauche', 'plafond', 'droite (haut)', 'droite (bas)']
+};
+var MIST = { room: null, ok: 0, cross: false };
+function mistHTML() {
+  var tot = Math.min(6, MIST.ok + (MIST.cross ? 1 : 0)), dots = '';
+  for (var i = 0; i < 6; i++) dots += '<i class="' + (i < tot ? 'on' : '') + '"></i>';
+  var h = '<p class="rnote">Il faut <b>6 bonnes sorties</b>, avec l’Aiguilline dans l’inventaire. Le couloir du « croisement » compte comme une sortie. Une mauvaise sortie, une chute ou une mort remet tout à zéro. Sourcé (guide d’oxbox).</p>';
+  h += '<div class="mcount"><span class="mdots" role="img" aria-label="' + tot + ' bonnes sorties sur 6">' + dots + '</span><b>' + tot + ' / 6</b></div>';
+  h += tot >= 6 ? '<p class="rgap ok">Brume terminée : la sortie mène à l’Orgue de Ventilation.</p>' : '';
+  h += '<div class="row-actions"><button type="button" class="chip" data-mist="ok">Bonne sortie +1</button>' +
+    '<button type="button" class="chip" data-mist="cross" aria-pressed="' + (MIST.cross ? 'true' : 'false') + '">Croisement traversé</button>' +
+    '<button type="button" class="chip" data-mist="reset">Échec : remettre à zéro</button></div>';
+  h += '<p class="rnote" style="margin-top:10px"><b>Stratégie des meilleurs.</b> Salles 1 et 2 : joue l’Aiguilline près des papillons et suis-les. Salle 3 : n’importe quelle sortie à gauche ou à droite, elle mène au couloir vide du croisement ; traverse-le sans jamais y revenir. Puis résous la salle 5. Salle 6 : une sortie de droite (une seule est valide, sauf salles M5 et M8). La troisième sortie est toujours une sortie de côté.</p>';
+  h += '<p class="nowk" style="margin-top:10px">Sorties d’une salle</p><div class="mrooms">' + Object.keys(MIST_ROOMS).map(function (k) {
+    return '<button type="button" class="chip" data-mist="room" data-room="' + k + '" aria-pressed="' + (MIST.room === k ? 'true' : 'false') + '">' + k + '</button>';
+  }).join('') + '</div>';
+  if (MIST.room) h += '<p class="rnote" style="margin-top:8px"><b>' + MIST.room + '</b> : ' + MIST_ROOMS[MIST.room].join(' · ') + '.' + (MIST.room === 'M7' ? ' Pas de sortie à droite : ne la fais pas en dernière salle.' : '') + '</p>';
+  return h;
+}
+function renderMist() { var b = $('#mist-body'); if (b) b.innerHTML = mistHTML(); }
+function mistClick(b) {
+  var k = b.getAttribute('data-mist');
+  if (k === 'ok') MIST.ok = Math.min(6, MIST.ok + 1);
+  else if (k === 'cross') MIST.cross = !MIST.cross;
+  else if (k === 'reset') { MIST.ok = 0; MIST.cross = false; }
+  else if (k === 'room') { var r = b.getAttribute('data-room'); MIST.room = MIST.room === r ? null : r; }
+  renderMist();
+}
+
 /* ---------- Carte « Maintenant » ---------- */
 var now = { id: null, open: false };
 function nowIndex(id) { return ORDER.indexOf(id); }
-/* Fin de route : pour le 100 %, on enregistre la run (temps de la sauvegarde) et on repart à zéro. */
+/* Fin de run (100 % et speedrun) : on garde le temps final et les temps par phase, puis la route repart à zéro. */
 function lastNotedMin() {
   for (var i = PHASES.length - 1; i >= 0; i--) { var m = parseHM(tval(PHASES[i].id)); if (m != null) return m; }
   return null;
 }
-function endCard() {
-  var back = '<div class="nowsec"><button type="button" class="sbtn" data-now="back">Annuler la dernière étape</button></div>';
-  if (CUR !== 'a30') return '<p class="nowk">Route terminée</p><p class="nowt">Toutes les étapes sont cochées. Ajoute ton temps de sauvegarde dans l’onglet Runs.</p>' + back;
-  var m = lastNotedMin(), hv = m == null ? '' : Math.floor(m / 60), mv = m == null ? '' : ('0' + (m % 60)).slice(-2);
-  return '<p class="nowk">Route terminée</p><p class="nowt">Toutes les étapes sont cochées. Compare le pourcentage de la Longue-vue avec celui de cette page avant le combat final.</p>' +
-    '<p class="nowk" style="margin-top:14px">Terminer la run</p><p class="rnote">Entre le temps affiché sur ta sauvegarde. La run est gardée dans l’onglet Temps, puis la route repart à zéro.</p>' +
-    '<span class="tfield fin"><input class="tin" id="fin-h" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="h" aria-label="Heures" value="' + hv + '">h' +
-    '<input class="tin" id="fin-m" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="min" aria-label="Minutes" value="' + mv + '">min</span>' +
-    '<button class="btn xl" type="button" data-now="finish">Terminer la run</button><p id="fin-msg" class="rmsg" aria-live="polite"></p>' + back;
+function durText(sec) { return CUR === 'speed' ? fmtDur(sec) : hm(sec / 60); }
+function readDur(pfx, withSec) {
+  var hs = $('#' + pfx + '-h').value.replace(/\D/g, ''), ms = $('#' + pfx + '-m').value.replace(/\D/g, ''), ss = withSec ? $('#' + pfx + '-s').value.replace(/\D/g, '') : '';
+  if (+ms > 59 || +ss > 59) return 0;
+  return (+hs || 0) * 3600 + (+ms || 0) * 60 + (+ss || 0);
 }
-function finishRun(b) {
-  var msg = $('#fin-msg'), hs = $('#fin-h').value.replace(/\D/g, ''), ms = $('#fin-m').value.replace(/\D/g, ''), mins = (+hs || 0) * 60 + (+ms || 0);
-  if (!mins || +ms > 59) { msg.textContent = 'Entre un temps valide (minutes de 0 à 59).'; msg.className = 'rmsg late'; return; }
-  if (b.getAttribute('data-arm') !== '1') {
-    b.setAttribute('data-arm', '1'); b.classList.add('arm'); b.textContent = 'Confirmer : enregistrer ' + hm(mins) + ' et repartir à zéro';
-    msg.textContent = ''; clearTimeout(b._t);
-    b._t = setTimeout(function () { b.removeAttribute('data-arm'); b.classList.remove('arm'); b.textContent = 'Terminer la run'; }, 6000);
-    return;
-  }
-  clearTimeout(b._t);
-  RUNS30.push({ id: 'q' + Date.now().toString(36), t: mins * 60, d: todayISO(), n: '' }); saveRuns30();
+function archiveRun(sec) {
+  var list = CUR === 'a30' ? RUNS30 : RUNS;
+  list.push({ id: 'q' + Date.now().toString(36), t: sec, d: todayISO(), n: '', sp: tmap(T) });
+  if (CUR === 'a30') saveRuns30(); else saveRuns();
+}
+function restartRoute() {
   S.d = {}; touch();
   Object.keys(T.v).forEach(function (k) { if (T.v[k]) touchT(k, ''); });
   UI.og = {}; lastGK = null; now.id = null; saveUI();
   $$('.group').forEach(function (g) { g.classList.remove('open'); });
-  buildTime(); refreshAll(); autoGroups(true); window.scrollTo({ top: 0 });
-  var nb = $('#now'); if (nb) { var m2 = document.createElement('p'); m2.className = 'rmsg ok'; m2.textContent = 'Run enregistrée : ' + hm(mins) + '. La route est prête pour une nouvelle run.'; nb.insertBefore(m2, nb.firstChild); }
+  buildTime(); buildRuns(); refreshAll(); autoGroups(true); window.scrollTo({ top: 0 });
+}
+/* Bouton « Terminer la run » en deux touches. pfx : préfixe des champs h/min(/s). */
+function finishFrom(b, pfx, withSec, msgSel) {
+  var msg = $(msgSel), t = readDur(pfx, withSec), base = b.getAttribute('data-label') || b.textContent;
+  b.setAttribute('data-label', base);
+  if (!t) { msg.textContent = 'Entre un temps valide (minutes et secondes de 0 à 59).'; msg.className = 'rmsg late'; return; }
+  if (b.getAttribute('data-arm') !== '1') {
+    b.setAttribute('data-arm', '1'); b.classList.add('arm'); b.textContent = 'Confirmer : enregistrer ' + durText(t) + ' et repartir à zéro';
+    msg.textContent = ''; clearTimeout(b._t);
+    b._t = setTimeout(function () { b.removeAttribute('data-arm'); b.classList.remove('arm'); b.textContent = base; }, 6000);
+    return;
+  }
+  clearTimeout(b._t);
+  archiveRun(t); restartRoute();
+  var nb = $('#now'); if (nb) { var m2 = document.createElement('p'); m2.className = 'rmsg ok'; m2.textContent = 'Run enregistrée : ' + durText(t) + '. La route est prête pour une nouvelle run.'; nb.insertBefore(m2, nb.firstChild); }
+}
+function durFields(pfx, withSec, h, m, s) {
+  var f = function (id, ph, max, v) { return '<input class="tin" id="' + pfx + '-' + id + '" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="' + max + '" autocomplete="off" placeholder="' + ph + '" aria-label="' + ph + '" value="' + (v == null ? '' : v) + '">'; };
+  return '<span class="tfield fin">' + f('h', 'h', 2, h) + 'h' + f('m', 'min', 2, m) + 'min' + (withSec ? f('s', 's', 2, s) + 's' : '') + '</span>';
+}
+function endCard() {
+  var back = '<div class="nowsec"><button type="button" class="sbtn" data-now="back">Annuler la dernière étape</button></div>';
+  var m = lastNotedMin(), hv = m == null ? '' : Math.floor(m / 60), mv = m == null ? '' : ('0' + (m % 60)).slice(-2);
+  var intro = CUR === 'a30' ? 'Toutes les étapes sont cochées. Compare le pourcentage de la Longue-vue avec celui de cette page avant le combat final.' : 'Toutes les étapes sont cochées. Bravo !';
+  var tail = CUR === 'a30' ? 'La run est gardée dans l’onglet Temps' : 'La run est gardée dans l’onglet Runs';
+  return '<p class="nowk">Route terminée</p><p class="nowt">' + intro + '</p>' +
+    '<p class="nowk" style="margin-top:14px">Terminer la run</p><p class="rnote">Entre le temps affiché sur ta sauvegarde. ' + tail + ' avec tes temps par phase, puis la route repart à zéro.</p>' +
+    durFields('fin', CUR === 'speed', hv, mv, CUR === 'speed' ? '' : null) +
+    '<button class="btn xl" type="button" data-now="finish">Terminer la run</button><p id="fin-msg" class="rmsg" aria-live="polite"></p>' + back;
 }
 function refreshNow() {
   var box = $('#now'); if (!box) return;
@@ -1779,16 +1875,21 @@ function buildColl() {
 
 /* ---------- Construction : temps ---------- */
 function runs30Card() {
-  var sp = HOME.speed({ runs: RUNS30, limit: PROF.a30.limit * 60 });
+  var sp = HOME.speed({ runs: RUNS30, limit: PROF.a30.limit * 60 }), m = lastNotedMin();
   var h = '<div class="card"><h2>Runs terminées</h2>';
-  if (!RUNS30.length) return h + '<p class="rnote">Aucune run terminée. Quand toutes les étapes sont cochées, « Terminer la run » (carte Maintenant) l’enregistre ici.</p></div>';
-  var gap = PROF.a30.limit - sp.best / 60;
-  h += '<p class="rbest"><span>Record</span><b>' + hm(sp.best / 60) + '</b></p><p class="rgap ' + (gap > 0 ? 'ok' : 'late') + '">' + esc(hm(Math.abs(gap)) + (gap > 0 ? ' sous' : ' au-dessus de') + ' l’objectif de 30 h') + '</p><ul class="rlist">';
-  h += RUNS30.slice().reverse().map(function (r) {
-    return '<li><div><b>' + hm(r.t / 60) + '</b>' + (r.t === sp.best ? ' <span class="rtag">Record</span>' : '') + '<span class="rsub">' + esc(fmtDate(r.d)) + '</span></div>' +
-      '<button type="button" class="rbtn r30del" data-rid="' + esc(r.id) + '">Supprimer</button></li>';
-  }).join('') + '</ul></div>';
-  return h;
+  if (!RUNS30.length) h += '<p class="rnote">Aucune run terminée. Quand toutes les étapes sont cochées, « Terminer la run » (carte Maintenant) l’enregistre ici.</p>';
+  else {
+    var gap = PROF.a30.limit - sp.best / 60;
+    h += '<p class="rbest"><span>Record</span><b>' + hm(sp.best / 60) + '</b></p><p class="rgap ' + (gap > 0 ? 'ok' : 'late') + '">' + esc(hm(Math.abs(gap)) + (gap > 0 ? ' sous' : ' au-dessus de') + ' l’objectif de 30 h') + '</p><ul class="rlist">';
+    h += RUNS30.slice().reverse().map(function (r) {
+      return '<li><div><b>' + hm(r.t / 60) + '</b>' + (r.t === sp.best ? ' <span class="rtag">Record</span>' : '') + '<span class="rsub">' + esc(fmtDate(r.d)) + (Object.keys(r.sp || {}).length ? ' · temps par phase gardés' : '') + '</span></div>' +
+        '<button type="button" class="rbtn r30del" data-rid="' + esc(r.id) + '">Supprimer</button></li>';
+    }).join('') + '</ul>';
+  }
+  h += '<div class="radd" style="margin-top:12px"><p class="rnote">Tu as fini sans tout cocher ? Entre le temps de ta sauvegarde : la run est gardée avec tes temps par phase, puis la route repart à zéro.</p>' +
+    durFields('r30', false, m == null ? '' : Math.floor(m / 60), m == null ? '' : ('0' + (m % 60)).slice(-2)) +
+    '<button class="btn ghost" id="r30-fin" type="button">Terminer la run maintenant</button><p id="r30-msg" class="rmsg" aria-live="polite"></p></div></div>';
+  return h + compareCard(RUNS30);
 }
 function buildTime() {
   var h = ['<div class="tsync" id="t-sync"></div><div class="status" id="t-status">Note ton temps de jeu (celui de l’écran de sélection de sauvegarde) à la fin de chaque phase pour voir ton avance ou ton retard.</div><div class="card"><h2>Repères de temps</h2>' +
@@ -1800,7 +1901,7 @@ function buildTime() {
     h.push('<div class="trow"><span class="tname">' + esc(p.title) + '</span>' +
       '<span class="tfield"><input class="tin th" data-ph="' + p.id + '" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="h" aria-label="Heures : ' + esc(p.title) + '">h' +
       '<input class="tin tm" data-ph="' + p.id + '" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="min" aria-label="Minutes : ' + esc(p.title) + '"></span>' +
-      '<span class="tsub">' + (CUR === 'speed' ? 'Repère ' : 'Limite ') + hm(parseHM(p.target)) + ' <span class="delta" data-d="' + p.id + '"></span></span></div>');
+      '<span class="tsub">' + (CUR === 'speed' ? 'Repère ' : 'Limite ') + hm(parseHM(p.target)) + ' <span class="delta" data-d="' + p.id + '"></span><span class="delta" data-rd="' + p.id + '"></span></span></div>');
   });
   h.push('</div>');
   $('#tab-time').innerHTML = (CUR === 'a30' ? runs30Card() : '') + h.join('');
@@ -1962,6 +2063,14 @@ function refreshTime() {
     var span = $('[data-d="' + p.id + '"]'); if (!span) return;
     var a = parseHM(tval(p.id)), t = p.target ? parseHM(p.target) : null;
     span.className = 'delta'; span.textContent = '';
+    var rs = $('[data-rd="' + p.id + '"]'), rec = HOME.bestRun((CUR === 'a30' ? RUNS30 : RUNS).filter(function (r) { return r.sp && Object.keys(r.sp).length; })), rm = rec && rec.sp ? parseHM(rec.sp[p.id]) : null;
+    if (rs) {
+      rs.className = 'delta'; rs.textContent = '';
+      if (rm != null) {
+        rs.textContent = ' · record ' + hm(rm);
+        if (a != null) { var dd = a - rm; rs.textContent += dd === 0 ? ' (égal)' : ' (' + minTxt(dd) + ')'; rs.className = 'delta ' + (dd <= 0 ? 'ok' : 'late'); }
+      }
+    }
     if (a != null && t != null) {
       var d = a - t;
       span.textContent = d <= 0 ? '· avance ' + hm(-d) : '· retard ' + hm(d);
@@ -2225,6 +2334,7 @@ function bind() {
   }
   $('#route-list').addEventListener('click', function (e) {
     if (common(e)) return;
+    var mb = e.target.closest('[data-mist]'); if (mb) { mistClick(mb); return; }
     var st = e.target.closest('.stext[data-act="more"]');
     if (st) { var li = st.closest('.step'), on = !li.classList.contains('open'); li.classList.toggle('open', on); st.setAttribute('aria-expanded', on ? 'true' : 'false'); return; }
     var rb = e.target.closest('.rbtn'); if (rb) { resetClick(rb); return; }
@@ -2241,7 +2351,7 @@ function bind() {
     if (a === 'done' && now.id) { toggleStep(now.id, true); window.scrollTo({ top: 0 }); }
     else if (a === 'more') { now.open = !now.open; b.setAttribute('aria-expanded', now.open ? 'true' : 'false'); $('.nowmore', $('#now')).hidden = !now.open && !UI.det; }
     else if (a === 'back') { var i = nowIndex(now.id); if (i > 0) toggleStep(ORDER[i - 1], false); else if (i < 0 && ORDER.length) toggleStep(ORDER[ORDER.length - 1], false); }
-    else if (a === 'finish') finishRun(b);
+    else if (a === 'finish') finishFrom(b, 'fin', CUR === 'speed', '#fin-msg');
     else if (a === 'list') resume();
   });
   $('#lb').addEventListener('click', closeLB);
@@ -2265,6 +2375,7 @@ function bind() {
     refreshAll();
   }
   $('#tab-time').addEventListener('click', function (e) {
+    var fb = e.target.closest('#r30-fin'); if (fb) { finishFrom(fb, 'r30', false, '#r30-msg'); return; }
     var b = e.target.closest('.r30del'); if (!b) return;
     if (b.getAttribute('data-arm') !== '1') {
       b.setAttribute('data-arm', '1'); b.textContent = 'Confirmer'; b.classList.add('arm');
@@ -2330,25 +2441,42 @@ function fmtDate(d) {
   try { return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return d; }
 }
 function todayISO() { var t = new Date(); return t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2); }
+function shortTitle(t) { return CUR === 'speed' && t.indexOf(' : ') >= 0 ? t.split(' : ')[0] : t; }
+function minTxt(d) {
+  var s = d < 0 ? '−' : '+', x = Math.abs(d);
+  return s + (x >= 60 ? Math.floor(x / 60) + ' h ' + ('0' + (x % 60)).slice(-2) : x + ' min');
+}
+/* Dernière run contre record, phase par phase (durées de chaque phase, pas les cumuls). */
+function compareCard(runs) {
+  var c = HOME.compare(runs, PHASES.filter(function (p) { return p.target; }).map(function (p) { return p.id; }));
+  if (!c.rows.length) return '';
+  var h = '<div class="card"><h2>Dernière run contre record</h2>';
+  h += c.worst ? '<p class="rnote">Tu perds le plus de temps en <b>' + esc(shortTitle(PH[c.worst.id].title)) + '</b> (' + minTxt(c.worst.diff) + ').</p>' : '<p class="rnote">Tu as été au moins aussi rapide que ton record sur toutes les phases comparées.</p>';
+  h += '<div class="tbl"><table><thead><tr><th>Phase</th><th class="n">Dernière</th><th class="n">Record</th><th class="n">Écart</th></tr></thead><tbody>' +
+    c.rows.map(function (r) {
+      return '<tr><td>' + esc(shortTitle(PH[r.id].title)) + '</td><td class="n">' + hm(r.last) + '</td><td class="n">' + hm(r.best) + '</td><td class="n ' + (r.diff > 0 ? 'late' : 'ok') + '">' + (r.diff === 0 ? '0' : minTxt(r.diff)) + '</td></tr>';
+    }).join('') + '</tbody></table></div></div>';
+  return h;
+}
 function buildRuns() {
   var box = $('#tab-runs'); if (!box) return;
-  var sp = HOME.speed({ runs: RUNS, limit: SPEED_LIMIT });
+  if (CUR !== 'speed') { box.innerHTML = ''; return; }
+  var sp = HOME.speed({ runs: RUNS, limit: SPEED_LIMIT }), m = lastNotedMin();
   var h = '<div class="card"><h2>Objectif : moins de 5 h</h2><p class="rnote">Temps de jeu de la sauvegarde, celui de l’écran de sélection. C’est le succès <b>Speedrunner</b>.</p>';
   if (sp.best == null) h += '<p class="rbest none">Aucun temps enregistré</p>';
   else h += '<p class="rbest"><span>Record</span><b>' + fmtDur(sp.best) + '</b></p><p class="rgap ' + (sp.under ? 'ok' : 'late') + '">' + esc(gapText(sp.best)) + '</p>';
-  h += '</div><div class="card"><h2>Ajouter un temps</h2><div class="radd">' +
-    '<span class="tfield"><input class="tin" id="r-h" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" placeholder="h" aria-label="Heures">h' +
-    '<input class="tin" id="r-m" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="min" aria-label="Minutes">min' +
-    '<input class="tin" id="r-s" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="s" aria-label="Secondes">s</span>' +
+  h += '</div>' + compareCard(RUNS) + '<div class="card"><h2>Ajouter un temps</h2><div class="radd">' +
+    durFields('r', true, m == null ? '' : Math.floor(m / 60), m == null ? '' : ('0' + (m % 60)).slice(-2), '') +
     '<input class="search" id="r-n" type="text" maxlength="80" autocomplete="off" placeholder="Note (facultatif)" aria-label="Note">' +
-    '<button class="btn" id="r-add" type="button">Enregistrer ce temps</button><p id="r-msg" class="rmsg" aria-live="polite"></p></div></div>';
+    '<button class="btn" id="r-fin" type="button">Terminer la run et repartir à zéro</button>' +
+    '<button class="btn ghost" id="r-add" type="button">Enregistrer seulement ce temps</button><p id="r-msg" class="rmsg" aria-live="polite"></p>' +
+    '<p class="rnote">« Terminer la run » garde aussi tes temps par phase, pour les comparer à ton record, puis remet la route à zéro. « Enregistrer seulement ce temps » ne touche pas à la route.</p></div></div>';
   h += '<div class="card"><h2>Mes runs</h2>';
   if (!RUNS.length) h += '<p class="rnote">Pas encore de run. Ajoute le temps affiché sur ta sauvegarde à la fin de chaque partie.</p>';
   else {
-    var list = RUNS.slice().reverse();
-    h += '<ul class="rlist">' + list.map(function (r) {
+    h += '<ul class="rlist">' + RUNS.slice().reverse().map(function (r) {
       return '<li><div><b>' + fmtDur(r.t) + '</b>' + (r.t === sp.best ? ' <span class="rtag">Record</span>' : '') +
-        '<span class="rsub">' + esc(fmtDate(r.d)) + (r.n ? ' · ' + esc(r.n) : '') + ' · ' + esc(gapText(r.t)) + '</span></div>' +
+        '<span class="rsub">' + esc(fmtDate(r.d)) + (r.n ? ' · ' + esc(r.n) : '') + ' · ' + esc(gapText(r.t)) + (Object.keys(r.sp || {}).length ? ' · temps par phase gardés' : '') + '</span></div>' +
         '<button type="button" class="rbtn rdel" data-rid="' + esc(r.id) + '">Supprimer</button></li>';
     }).join('') + '</ul>';
   }
@@ -2356,11 +2484,11 @@ function buildRuns() {
 }
 function runsClick(e) {
   var b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'r-fin') { finishFrom(b, 'r', true, '#r-msg'); return; }
   if (b.id === 'r-add') {
-    var hs = $('#r-h').value.replace(/\D/g, ''), ms = $('#r-m').value.replace(/\D/g, ''), ss = $('#r-s').value.replace(/\D/g, ''), msg = $('#r-msg');
-    var t = (+hs || 0) * 3600 + (+ms || 0) * 60 + (+ss || 0);
-    if (!t || +ms > 59 || +ss > 59) { msg.textContent = 'Entre un temps valide (minutes et secondes de 0 à 59).'; msg.className = 'rmsg late'; return; }
-    RUNS.push({ id: 'r' + Date.now().toString(36), t: t, d: todayISO(), n: $('#r-n').value.trim() });
+    var t = readDur('r', true), msg = $('#r-msg');
+    if (!t) { msg.textContent = 'Entre un temps valide (minutes et secondes de 0 à 59).'; msg.className = 'rmsg late'; return; }
+    RUNS.push({ id: 'r' + Date.now().toString(36), t: t, d: todayISO(), n: $('#r-n').value.trim(), sp: {} });
     saveRuns(); buildRuns(); return;
   }
   if (b.classList.contains('rdel')) {
@@ -2433,7 +2561,7 @@ function useProfile(key) {
   lastGK = null; now.id = null;
   $('.bname').textContent = P.name;
   $$('.tabs button').forEach(function (b) { b.hidden = P.tabs.indexOf(b.getAttribute('data-tab')) < 0; });
-  buildRoute(); buildTime(); buildInfo(); buildRuns();
+  buildRoute(); renderMist(); buildTime(); buildInfo(); buildRuns();
   PHASES.forEach(function (p) { if (UI.open[p.id]) setOpen(p.id, true); });
   var first = firstUndone();
   if (first && !PHASES.some(function (p) { return UI.open[p.id]; })) setOpen(STEPS[first].phase, true);
