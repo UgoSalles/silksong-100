@@ -109,6 +109,8 @@ a { color: var(--accent); }
 .rgap { margin: 0; font-size: 14.5px; font-weight: 700; } .rgap.ok { color: var(--ok); } .rgap.late, .rmsg.late { color: var(--accent); }
 .radd { display: grid; gap: 10px; }
 .radd .tfield { justify-content: flex-start; }
+.tfield.fin { grid-column: auto; grid-row: auto; justify-content: flex-start; margin: 0; }
+.rmsg.ok { color: var(--ok); }
 .rmsg { margin: 0; font-size: 14px; min-height: 1px; }
 .rlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
 .rlist li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
@@ -1507,6 +1509,7 @@ var PROF = {
 };
 var PD = {};
 var LSR = 'silksong100.runs.v1', RUNS = [];
+var LSR30 = 'silksong100.runs30.v1', RUNS30 = [];
 function lsGet(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
 function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function normState(s, steps) {
@@ -1542,6 +1545,7 @@ function normRuns(r) {
   return out;
 }
 function saveRuns() { lsSet(LSR, RUNS); }
+function saveRuns30() { lsSet(LSR30, RUNS30); }
 function loadLocal() {
   Object.keys(PROF).forEach(function (key) {
     var P = PROF[key], D = PD[key], s = lsGet(P.ls);
@@ -1553,6 +1557,7 @@ function loadLocal() {
   var u = lsGet(LSUI); if (u) for (var k in u) UI[k] = u[k];
   if (!UI.po || typeof UI.po !== 'object') UI.po = {};
   RUNS = normRuns(lsGet(LSR));
+  RUNS30 = normRuns(lsGet(LSR30));
 }
 function saveUI() { if (CUR) UI.po[CUR] = { open: UI.open, og: UI.og }; lsSet(LSUI, UI); }
 function touch() { S.u = Date.now(); lsSet(LS, serial()); schedulePush(); }
@@ -1679,15 +1684,49 @@ function buildRoute() {
 /* ---------- Carte « Maintenant » ---------- */
 var now = { id: null, open: false };
 function nowIndex(id) { return ORDER.indexOf(id); }
+/* Fin de route : pour le 100 %, on enregistre la run (temps de la sauvegarde) et on repart à zéro. */
+function lastNotedMin() {
+  for (var i = PHASES.length - 1; i >= 0; i--) { var m = parseHM(tval(PHASES[i].id)); if (m != null) return m; }
+  return null;
+}
+function endCard() {
+  var back = '<div class="nowsec"><button type="button" class="sbtn" data-now="back">Annuler la dernière étape</button></div>';
+  if (CUR !== 'a30') return '<p class="nowk">Route terminée</p><p class="nowt">Toutes les étapes sont cochées. Ajoute ton temps de sauvegarde dans l’onglet Runs.</p>' + back;
+  var m = lastNotedMin(), hv = m == null ? '' : Math.floor(m / 60), mv = m == null ? '' : ('0' + (m % 60)).slice(-2);
+  return '<p class="nowk">Route terminée</p><p class="nowt">Toutes les étapes sont cochées. Compare le pourcentage de la Longue-vue avec celui de cette page avant le combat final.</p>' +
+    '<p class="nowk" style="margin-top:14px">Terminer la run</p><p class="rnote">Entre le temps affiché sur ta sauvegarde. La run est gardée dans l’onglet Temps, puis la route repart à zéro.</p>' +
+    '<span class="tfield fin"><input class="tin" id="fin-h" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="h" aria-label="Heures" value="' + hv + '">h' +
+    '<input class="tin" id="fin-m" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="min" aria-label="Minutes" value="' + mv + '">min</span>' +
+    '<button class="btn xl" type="button" data-now="finish">Terminer la run</button><p id="fin-msg" class="rmsg" aria-live="polite"></p>' + back;
+}
+function finishRun(b) {
+  var msg = $('#fin-msg'), hs = $('#fin-h').value.replace(/\D/g, ''), ms = $('#fin-m').value.replace(/\D/g, ''), mins = (+hs || 0) * 60 + (+ms || 0);
+  if (!mins || +ms > 59) { msg.textContent = 'Entre un temps valide (minutes de 0 à 59).'; msg.className = 'rmsg late'; return; }
+  if (b.getAttribute('data-arm') !== '1') {
+    b.setAttribute('data-arm', '1'); b.classList.add('arm'); b.textContent = 'Confirmer : enregistrer ' + hm(mins) + ' et repartir à zéro';
+    msg.textContent = ''; clearTimeout(b._t);
+    b._t = setTimeout(function () { b.removeAttribute('data-arm'); b.classList.remove('arm'); b.textContent = 'Terminer la run'; }, 6000);
+    return;
+  }
+  clearTimeout(b._t);
+  RUNS30.push({ id: 'q' + Date.now().toString(36), t: mins * 60, d: todayISO(), n: '' }); saveRuns30();
+  S.d = {}; touch();
+  Object.keys(T.v).forEach(function (k) { if (T.v[k]) touchT(k, ''); });
+  UI.og = {}; lastGK = null; now.id = null; saveUI();
+  $$('.group').forEach(function (g) { g.classList.remove('open'); });
+  buildTime(); refreshAll(); autoGroups(true); window.scrollTo({ top: 0 });
+  var nb = $('#now'); if (nb) { var m2 = document.createElement('p'); m2.className = 'rmsg ok'; m2.textContent = 'Run enregistrée : ' + hm(mins) + '. La route est prête pour une nouvelle run.'; nb.insertBefore(m2, nb.firstChild); }
+}
 function refreshNow() {
   var box = $('#now'); if (!box) return;
   var id = firstUndone();
   if (UI.q) { box.hidden = true; return; }
   box.hidden = false;
-  if (id === now.id && box.firstChild) return;
-  if (id !== now.id) now.open = false;
-  now.id = id;
-  if (!id) { box.className = 'now fin'; box.innerHTML = '<p class="nowk">Route terminée</p><p class="nowt">Toutes les étapes sont cochées. Compare le pourcentage de la Longue-vue avec celui de cette page avant le combat final.</p>'; return; }
+  var key = id || ('end:' + CUR);
+  if (key === now.id && box.firstChild) return;
+  if (key !== now.id) now.open = false;
+  now.id = key;
+  if (!id) { box.className = 'now fin'; box.innerHTML = endCard(); return; }
   var s = STEPS[id], f = stepInfo(s), p = PH[s.phase], parts = id.split('-'), g = p.groups[+parts[1] - 1], n = +parts[2], idx = nowIndex(id);
   var later = [], j;
   for (j = idx + 1; j < ORDER.length && later.length < 2; j++) if (!S.d[ORDER[j]]) later.push(STEPS[ORDER[j]]);
@@ -1739,6 +1778,18 @@ function buildColl() {
 }
 
 /* ---------- Construction : temps ---------- */
+function runs30Card() {
+  var sp = HOME.speed({ runs: RUNS30, limit: PROF.a30.limit * 60 });
+  var h = '<div class="card"><h2>Runs terminées</h2>';
+  if (!RUNS30.length) return h + '<p class="rnote">Aucune run terminée. Quand toutes les étapes sont cochées, « Terminer la run » (carte Maintenant) l’enregistre ici.</p></div>';
+  var gap = PROF.a30.limit - sp.best / 60;
+  h += '<p class="rbest"><span>Record</span><b>' + hm(sp.best / 60) + '</b></p><p class="rgap ' + (gap > 0 ? 'ok' : 'late') + '">' + esc(hm(Math.abs(gap)) + (gap > 0 ? ' sous' : ' au-dessus de') + ' l’objectif de 30 h') + '</p><ul class="rlist">';
+  h += RUNS30.slice().reverse().map(function (r) {
+    return '<li><div><b>' + hm(r.t / 60) + '</b>' + (r.t === sp.best ? ' <span class="rtag">Record</span>' : '') + '<span class="rsub">' + esc(fmtDate(r.d)) + '</span></div>' +
+      '<button type="button" class="rbtn r30del" data-rid="' + esc(r.id) + '">Supprimer</button></li>';
+  }).join('') + '</ul></div>';
+  return h;
+}
 function buildTime() {
   var h = ['<div class="tsync" id="t-sync"></div><div class="status" id="t-status">Note ton temps de jeu (celui de l’écran de sélection de sauvegarde) à la fin de chaque phase pour voir ton avance ou ton retard.</div><div class="card"><h2>Repères de temps</h2>' +
     (CUR === 'speed'
@@ -1752,7 +1803,7 @@ function buildTime() {
       '<span class="tsub">' + (CUR === 'speed' ? 'Repère ' : 'Limite ') + hm(parseHM(p.target)) + ' <span class="delta" data-d="' + p.id + '"></span></span></div>');
   });
   h.push('</div>');
-  $('#tab-time').innerHTML = h.join('');
+  $('#tab-time').innerHTML = (CUR === 'a30' ? runs30Card() : '') + h.join('');
   timeSync();
   $$('.trow').forEach(function (row) {
     var t = parseHM(tval(row.querySelector('.th').getAttribute('data-ph')));
@@ -2115,23 +2166,25 @@ function importProfile(key, dd, tt) {
   if (cur && key === 'a30') { schedulePush(); schedulePushT(true); }
   return { n: n, tn: tn };
 }
-function exportAll() { var o = serialOf('a30'); o.sp = serialOf('speed'); o.runs = RUNS; return o; }
+function exportAll() { var o = serialOf('a30'); o.sp = serialOf('speed'); o.runs = RUNS; o.runs30 = RUNS30; return o; }
 function importData() {
   var msg = $('#inmsg'), raw = $('#inbox').value.trim(), o;
   function fail(t) { msg.textContent = t; msg.style.color = 'var(--accent)'; }
   if (!raw) return fail('Colle d’abord le texte copié.');
   try { o = JSON.parse(raw); } catch (e) { return fail('Ce texte n’est pas valide : copie-le de nouveau en entier.'); }
-  var hasA = !!o && (Array.isArray(o.d) || (!!o.d && typeof o.d === 'object')), hasS = !!o && !!o.sp && typeof o.sp === 'object', hasR = !!o && Array.isArray(o.runs);
-  if (!hasA && !hasS && !hasR) return fail('Ce texte ne contient pas de progression.');
+  var hasA = !!o && (Array.isArray(o.d) || (!!o.d && typeof o.d === 'object')), hasS = !!o && !!o.sp && typeof o.sp === 'object', hasR = !!o && Array.isArray(o.runs), hasR30 = !!o && Array.isArray(o.runs30);
+  if (!hasA && !hasS && !hasR && !hasR30) return fail('Ce texte ne contient pas de progression.');
   var r = { a: { n: 0, tn: 0 }, s: { n: 0, tn: 0 }, runs: 0 };
   if (hasA) r.a = importProfile('a30', o.d, o.t);
   if (hasS) r.s = importProfile('speed', o.sp.d, o.sp.t);
   if (hasR) { RUNS = normRuns(o.runs); saveRuns(); r.runs = RUNS.length; }
+  if (hasR30) { RUNS30 = normRuns(o.runs30); saveRuns30(); }
   lastGK = null; now.id = null; buildTime(); buildRuns(); refreshAll(); autoGroups(true);
   var parts = [];
   if (hasA) parts.push(r.a.n + ' étapes du 100 % et ' + r.a.tn + ' temps');
   if (hasS) parts.push(r.s.n + ' étapes du speedrun et ' + r.s.tn + ' repères');
-  if (hasR) parts.push(r.runs + (r.runs > 1 ? ' runs' : ' run'));
+  if (hasR) parts.push(r.runs + (r.runs > 1 ? ' runs de speedrun' : ' run de speedrun'));
+  if (hasR30) parts.push(RUNS30.length + (RUNS30.length > 1 ? ' runs du 100 %' : ' run du 100 %'));
   msg.style.color = 'var(--ok)'; msg.textContent = 'Importé : ' + parts.join(', ') + '.'; $('#inbox').value = '';
 }
 function resetClick(b) {
@@ -2187,7 +2240,8 @@ function bind() {
     var a = b.getAttribute('data-now');
     if (a === 'done' && now.id) { toggleStep(now.id, true); window.scrollTo({ top: 0 }); }
     else if (a === 'more') { now.open = !now.open; b.setAttribute('aria-expanded', now.open ? 'true' : 'false'); $('.nowmore', $('#now')).hidden = !now.open && !UI.det; }
-    else if (a === 'back') { var i = nowIndex(now.id); if (i > 0) toggleStep(ORDER[i - 1], false); }
+    else if (a === 'back') { var i = nowIndex(now.id); if (i > 0) toggleStep(ORDER[i - 1], false); else if (i < 0 && ORDER.length) toggleStep(ORDER[ORDER.length - 1], false); }
+    else if (a === 'finish') finishRun(b);
     else if (a === 'list') resume();
   });
   $('#lb').addEventListener('click', closeLB);
@@ -2210,6 +2264,13 @@ function bind() {
     }
     refreshAll();
   }
+  $('#tab-time').addEventListener('click', function (e) {
+    var b = e.target.closest('.r30del'); if (!b) return;
+    if (b.getAttribute('data-arm') !== '1') {
+      b.setAttribute('data-arm', '1'); b.textContent = 'Confirmer'; b.classList.add('arm');
+      setTimeout(function () { b.removeAttribute('data-arm'); b.classList.remove('arm'); b.textContent = 'Supprimer'; }, 4000);
+    } else { var id = b.getAttribute('data-rid'); RUNS30 = RUNS30.filter(function (r) { return r.id !== id; }); saveRuns30(); buildTime(); }
+  });
   $('#tab-time').addEventListener('input', function (e) { var inp = e.target.closest('.tin'); if (inp) saveTime(inp, false); });
   $('#tab-time').addEventListener('change', function (e) { var inp = e.target.closest('.tin'); if (inp) saveTime(inp, true); });
   $('.tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) showTab(b.getAttribute('data-tab')); });
@@ -2320,6 +2381,11 @@ function homeCard(cat, title, body) {
   return '<button type="button" class="hcard" data-cat="' + cat + '"><p class="hct">' + esc(title) + '</p>' + body + '<span class="hgo" aria-hidden="true"></span></button>';
 }
 function homeBar(pct) { return '<div class="hbar" aria-hidden="true"><i style="width:' + pct + '%"></i></div>'; }
+function a30RunLine() {
+  if (!RUNS30.length) return '';
+  var rr = HOME.speed({ runs: RUNS30, limit: PROF.a30.limit * 60 });
+  return '<p class="hl">Dernière run : ' + HOME.hm(rr.last / 60) + ' · record ' + HOME.hm(rr.best / 60) + '</p>';
+}
 function buildHome() {
   var A = CUR === 'a30' ? { S: S, T: T } : { S: PD.a30.S, T: PD.a30.T };
   var apct = 0;
@@ -2335,7 +2401,7 @@ function buildHome() {
     tc += r.margin >= 0 ? ' ok' : ' late';
   }
   var h = homeCard('a30', PROF.a30.name,
-    '<p class="hcn"><b>' + pctFr(r.pct) + '<small>%</small></b><span>' + r.done + '/' + r.total + ' étapes</span></p>' + homeBar(r.pct) + '<p class="' + tc + '">' + esc(tl) + '</p>');
+    '<p class="hcn"><b>' + pctFr(r.pct) + '<small>%</small></b><span>' + r.done + '/' + r.total + ' étapes</span></p>' + homeBar(r.pct) + '<p class="' + tc + '">' + esc(tl) + '</p>' + a30RunLine());
   var sp = HOME.speed({ runs: RUNS, limit: SPEED_LIMIT });
   h += sp.last == null
     ? homeCard('speed', PROF.speed.name, '<p class="hl">Aucune run enregistrée</p>')
