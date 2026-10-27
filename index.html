@@ -70,6 +70,35 @@ a { color: var(--accent); }
 .btn.ghost { background: transparent; color: var(--accent); }
 .btn:focus-visible, .phead:focus-visible, .tabs button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
+/* Accueil */
+.home { padding-block: calc(env(safe-area-inset-top, 0px) + 20px) calc(env(safe-area-inset-bottom, 0px) + 28px); min-height: 100vh; }
+.hk { margin: 0 0 8px; font: 700 13px/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.ht { margin: 0 0 6px; font: 700 36px/1.05 var(--font-display); text-wrap: balance; }
+.hs { margin: 0 0 20px; color: var(--muted); }
+.hcards { display: grid; gap: 12px; }
+.hcard { appearance: none; text-align: left; width: 100%; position: relative; display: block; background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--c); border-radius: 16px; padding: 16px 58px 16px 16px; color: inherit; cursor: pointer; }
+.hcard[data-cat="a30"] { --c: var(--accent); } .hcard[data-cat="speed"] { --c: var(--yel); } .hcard[data-cat="steel"] { --c: var(--blue); }
+.hcard:active { background: var(--surface2); }
+.hcard:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.hct { margin: 0 0 8px; font-size: 17px; font-weight: 700; line-height: 1.25; }
+.hcn { display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; }
+.hcn b { font: 700 40px/1 var(--font-display); font-variant-numeric: lining-nums tabular-nums; }
+.hcn b small { font: 700 18px var(--font-body); color: var(--muted); margin-left: 2px; }
+.hcn span { color: var(--muted); font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.hbar { height: 6px; border-radius: 6px; background: var(--surface2); overflow: hidden; margin: 0 0 10px; }
+.hbar i { display: block; height: 100%; background: var(--c); border-radius: 6px; }
+.hl { margin: 0; font-size: 14.5px; color: var(--muted); }
+.hl.ok { color: var(--ok); } .hl.late { color: var(--accent); }
+.htag { display: inline-block; margin-top: 10px; padding: 3px 10px; border-radius: 999px; background: var(--surface2); color: var(--muted); font-size: 12.5px; font-weight: 700; }
+.hgo { position: absolute; right: 14px; top: 50%; margin-top: -14px; width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); }
+.hgo::before { content: ""; position: absolute; left: 9px; top: 9px; width: 8px; height: 8px; border-right: 2.5px solid var(--ink); border-top: 2.5px solid var(--ink); transform: rotate(45deg); }
+.soonbox { margin-top: 8px; padding: 14px; border-radius: 14px; background: var(--info-soft); font-size: 15px; }
+.back { appearance: none; display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 34px; padding: 4px 13px 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface2); color: var(--ink); font-weight: 700; font-size: 14.5px; letter-spacing: 0; text-transform: none; cursor: pointer; }
+.back:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.home .back { margin-bottom: 18px; }
+.brand .bname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brand .sync { margin-left: auto; }
+
 /* Onglets du bas */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .tabs .in { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
@@ -249,9 +278,26 @@ textarea.out { width: 100%; min-height: 110px; margin-top: 8px; padding: 10px; b
 </head>
 <body>
 <div id="app">
+  <div id="home" class="home">
+    <div class="wrap">
+      <p class="hk">Silksong</p>
+      <h1 class="ht">Mes objectifs</h1>
+      <p class="hs">Choisis une catégorie pour voir où tu en es.</p>
+      <div class="hcards" id="hcards"></div>
+    </div>
+  </div>
+  <div id="soon" class="home" hidden>
+    <div class="wrap">
+      <button type="button" class="back" id="soon-back" aria-label="Retour au menu">‹ Menu</button>
+      <h1 class="ht" id="soon-t"></h1>
+      <p class="hs" id="soon-s"></p>
+      <div class="soonbox"><b>En préparation.</b> Cette catégorie arrive après le menu : on la construit ensemble, avec ce que tu veux y suivre.</div>
+    </div>
+  </div>
+  <div id="cat" hidden>
   <header class="top">
     <div class="wrap">
-      <div class="brand"><span>Silksong · 100 % en moins de 30 h</span><span class="sync" id="sync" data-s="local" title="Sauvegarde locale seulement"></span></div>
+      <div class="brand"><button type="button" class="back" id="menu" aria-label="Retour au menu">‹ Menu</button><span class="bname">100 % en moins de 30 h</span><span class="sync" id="sync" data-s="local" title="Sauvegarde locale seulement"></span></div>
       <div class="pct"><span id="pct">0</span><small>%</small></div>
       <div class="meta"><span id="m-steps">0/0 étapes</span></div>
       <div class="bar" role="progressbar" aria-label="Pourcentage de complétion estimé" aria-valuemin="0" aria-valuemax="100" id="pbar"><i id="pfill"></i></div>
@@ -279,6 +325,7 @@ textarea.out { width: 100%; min-height: 110px; margin-top: 8px; padding: 10px; b
       <button type="button" role="tab" data-tab="info" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></svg>Infos</button>
     </div>
   </nav>
+  </div>
   <div class="lb" id="lb" hidden>
     <button class="btn lbx" type="button" id="lbx" aria-label="Fermer l’image">Fermer ✕</button>
     <div class="lbs"><img id="lbimg" alt="Capture agrandie du guide"></div>
@@ -1203,6 +1250,25 @@ const ROUTE_SRC = `## p0 | Avant de partir | - | Réglages et réflexes à avoir
 `;
 </script>
 <script>
+/* Récapitulatif de l'accueil : fonctions pures, sans accès à la page (testées dans tests/home.test.js). */
+var HOME = (function () {
+  var LIMIT = 30 * 60;
+  function hm(min) { var h = Math.floor(min / 60), m = Math.round(min % 60); return h + ' h ' + (m < 10 ? '0' : '') + m; }
+  /* o : { pct, done, total, final, cps: [{ target, actual }] } en minutes ; actual vaut null tant que le temps n'est pas noté.
+     Même règle que l'onglet Temps : le dernier repère noté donne le temps actuel et la fin estimée. */
+  function a30(o) {
+    var last = null;
+    o.cps.forEach(function (c) { if (c.actual != null && c.target != null) last = c; });
+    var r = { pct: Math.max(0, Math.min(100, o.pct)), done: o.done, total: o.total, last: null, est: null, margin: null };
+    if (last) { r.last = last.actual; r.est = last.actual + (o.final - last.target); r.margin = LIMIT - r.est; }
+    return r;
+  }
+  return { LIMIT: LIMIT, hm: hm, a30: a30 };
+})();
+if (typeof module !== 'undefined') module.exports = HOME;
+
+</script>
+<script>
 (function () {
 'use strict';
 var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -1897,6 +1963,51 @@ function bind() {
     else { if (cloud.dirty) schedulePush(true); if (tcloud.dirty) schedulePushT(true); }
   });
   window.addEventListener('pagehide', function () { if (cloud.dirty) schedulePush(true); if (tcloud.dirty) schedulePushT(true); });
+  $('#hcards').addEventListener('click', function (e) {
+    var c = e.target.closest('.hcard'); if (!c) return;
+    var cat = c.getAttribute('data-cat');
+    if (cat === 'a30') showView('cat'); else showView('soon', cat);
+  });
+  $('#menu').addEventListener('click', function () { showView('home'); });
+  $('#soon-back').addEventListener('click', function () { showView('home'); });
+}
+
+/* ---------- Accueil (menu des catégories) ---------- */
+var SOON = {
+  speed: ['Speedrun en moins de 5 h', 'Objectif : finir le jeu en moins de 5 h (succès Speedrunner).'],
+  steel: ['Âme d’acier à 100 %', 'Objectif : finir le jeu à 100 % en mode Âme d’acier, sans mourir (succès Steel Heart).']
+};
+function homeCard(cat, title, body) {
+  return '<button type="button" class="hcard" data-cat="' + cat + '"><p class="hct">' + esc(title) + '</p>' + body + '<span class="hgo" aria-hidden="true"></span></button>';
+}
+function buildHome() {
+  var st = stats();
+  var r = HOME.a30({
+    pct: st.pct, done: st.done, total: st.total, final: FINAL_TARGET,
+    cps: PHASES.map(function (p) { return { target: p.target ? parseHM(p.target) : null, actual: parseHM(tval(p.id)) }; })
+  });
+  var tl, tc = 'hl';
+  if (r.last == null) tl = 'Aucun temps noté pour l’instant';
+  else {
+    tl = 'Dernier temps ' + HOME.hm(r.last) + ' · fin estimée ' + HOME.hm(r.est) + (r.margin >= 0 ? ' (marge ' + HOME.hm(r.margin) + ')' : ' (dépasse de ' + HOME.hm(-r.margin) + ')');
+    tc += r.margin >= 0 ? ' ok' : ' late';
+  }
+  var h = homeCard('a30', '100 % en moins de 30 h',
+    '<p class="hcn"><b>' + pctFr(r.pct) + '<small>%</small></b><span>' + r.done + '/' + r.total + ' étapes</span></p>' +
+    '<div class="hbar" aria-hidden="true"><i style="width:' + r.pct + '%"></i></div><p class="' + tc + '">' + esc(tl) + '</p>');
+  ['speed', 'steel'].forEach(function (c) {
+    h += homeCard(c, SOON[c][0], '<p class="hl">' + esc(SOON[c][1]) + '</p><span class="htag">En préparation</span>');
+  });
+  $('#hcards').innerHTML = h;
+}
+var VIEW = 'home';
+function showView(v, cat) {
+  VIEW = v;
+  $('#home').hidden = v !== 'home'; $('#soon').hidden = v !== 'soon'; $('#cat').hidden = v !== 'cat';
+  if (v === 'home') buildHome();
+  else if (v === 'soon') { $('#soon-t').textContent = SOON[cat][0]; $('#soon-s').textContent = SOON[cat][1]; }
+  else { now.id = null; refreshAll(); showTab(UI.tab || 'route'); }
+  window.scrollTo(0, 0);
 }
 
 /* ---------- Démarrage ---------- */
@@ -1910,6 +2021,7 @@ Object.keys(UI.og).forEach(function (gk) { if (UI.og[gk]) setGroup(gk, true, tru
 refreshAll(); autoGroups(true); if (UI.q) applyFilter();
 applyView();
 showTab(UI.tab || 'route');
+showView('home');
 if (UI.wake) wake(true);
 initCloud();
 })();
