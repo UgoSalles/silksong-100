@@ -162,6 +162,17 @@ main { padding-block: 14px 110px; }
 .phase.open .pchev { transform: rotate(180deg); }
 .pbar { grid-column: 1 / -1; height: 5px; border-radius: 4px; background: var(--surface2); overflow: hidden; }
 .pbar > i { display: block; height: 100%; width: 0; background: var(--ok); }
+.phrow { display: flex; align-items: stretch; }
+.phrow .phead { flex: 1; min-width: 0; padding-left: 4px; }
+.psel { display: grid; place-items: center; width: 56px; flex: none; cursor: pointer; }
+.pcb { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pbox { position: relative; width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--muted); background: var(--surface); display: grid; place-items: center; }
+.pbox::after { content: ""; position: absolute; opacity: 0; }
+.pcb:checked + .pbox { background: var(--ok); border-color: var(--ok); }
+.pcb:checked + .pbox::after { opacity: 1; width: 13px; height: 7px; border-left: 3px solid var(--accent-ink); border-bottom: 3px solid var(--accent-ink); transform: rotate(-45deg) translate(1px, -1px); }
+.pcb.part + .pbox { border-color: var(--ok); }
+.pcb.part + .pbox::after { opacity: 1; width: 12px; height: 3px; background: var(--ok); border-radius: 2px; }
+.pcb:focus-visible + .pbox { outline: 3px solid var(--accent); outline-offset: 2px; }
 .phase.complete { background: transparent; }
 .phase.complete .pname { color: var(--muted); }
 .phase.complete .pname::after { content: " ✓"; color: var(--ok); }
@@ -1501,12 +1512,11 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - [A] La Soie ne soigne pas toute seule : ne te soigne que dans un moment sûr, juste après une attaque, jamais « au culot ». Les guides cités le répètent pour tous les boss. :: Déduit.
 - [!] **Ne dépense aucun Médaillon de souvenir sur l’Emblème Chasseur.** Les emplacements de l’Emblème Chasseur ne comptent pas pour la Sylphonie : il suffit alors de 15 Médaillons (au lieu de 18) pour la débloquer avant l’Acte 3.
 - [!] Le pourcentage réel n’apparaît dans le jeu qu’après avoir assemblé la **Longue-vue** (Les Abysses, Acte 3). D’ici là, cette appli calcule ton pourcentage à partir de tes cases cochées.
+- [A] **Prends le temps de parler aux PNJ** de chaque zone, à chaque acte : de nouveaux dialogues, souhaits et stocks apparaissent. Valider un souhait **ne fait pas avancer le %** : seules les récompenses qui sont des objets (cases de la liste Objets) comptent. :: Déduit (liste des souhaits du wiki francophone).
 
-## z1 | Grotte Verdoyante | - | 1 objet(s), 1 boss. Moments d’après le guide du 100 % : Acte 1, Acte 3. L’ordre des lignes ne dit rien sur ton trajet.
+## z1 | Grotte Verdoyante | - | 1 objet(s), 1 boss. Moments d’après le guide du 100 % : Acte 3. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
 - {{everbloom}} **Flore éternelle** : Souvenir Rouge (Grotte Verdoyante) : 3 Cœurs anciens requis (Acte 3). Accès : Acte 3. {f.flore}
-### PNJ, souhaits et boutiques
-- **Acte 1** · Traverser **Gouffre d’Os** sans parler aux PNJ, direction L’Antre.
 ### Boss
 - {{b-moss-mother}} [B] **Mère Forestière** · danger 2/5 · Acte 1, tout début. Préparation : Tue vite les Vers Verdoyants (source de Soie), saute ou rebondis sur la ruée, reste du côté droit de l’arène. :: Sourcé (wiki, guide Steam)
 
@@ -1517,13 +1527,19 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{mask-shard}} **Fragment de masque n°1** : Gouffre d’Os : acheté à Pebb (300 Perles). Accès : rien de spécial noté. {m1}
 - {{spool-fragment}} **Fragment de bobine n°1** : Gouffre d’Os : derrière un mur destructible dans une zone moussue au-dessus du village. Accès : rien de spécial noté. {b1}
 - {{memory-locket}} **Médaillon n°4 — Gouffre d’Os** : Récompense du souhait Scaralex explosif (Sombrevale atteint). En Acte 3 : au sol du Campement des survivants. Accès : Acte 3. {l4}
-### PNJ, souhaits et boutiques
-- **Acte 1** · Ne pas parler à **Eva** maintenant : sa 1re visite sera plus utile quand tu auras des Médaillons.
-- **Acte 2** · [$] Acheter 1 **Métal artisanal** (le 3e de la route). :: Pas besoin d’une 2e Clé simple : cette route n’en rachète pas à Pebb, la seule autre clé utile vient du Chemin du Pécheur. Budget de la boutique : 300 Perles (fragment de masque) + 120 (Broche magnétite) + le Métal artisanal. Si tu manques de Perles, prends d’abord le fragment de masque et reviens plus tard.
-- **Acte 2** · [!] Au **Mur à souhaits** du Gouffre d’Os, terminer **Réparations de Gouffre d’Os** (200 Fragments de carapace) puis **Un pont salvateur** (300) : prérequis de Soie et âme. :: Pour donner, approche-toi du Mur et dépose les Fragments de carapace (pas des Perles) ; c’est Flick le Fixeur qui reçoit les dons. Un pont salvateur n’apparaît qu’après Réparations, et après avoir vaincu Veuve ou être entré à Sombrevale : s’il manque, quitte la zone et reviens. Le pont se construit une fois la partie sauvegardée hors de la salle du campement (la Clochevoie en fait partie) ; il couvre le trou vers la Grotte Verdoyante. Les Fragments de carapace tombent de tous les ennemis : tue ce que tu croises avant d’arriver.
-- **Acte 2** · [!] Si ce n’est pas fait : terminer **Vêtements de pèlerin**, **Scaralex explosif** et **Châtiment du Tyran**. Chacun vaut 1 point de quête. Quantités : 12 Châles de pèlerin, 3 Gemmes de silex, le Crâne-Tyran de L’Antre. :: Châles : ils tombent des ennemis dont le nom contient « Pèlerin » (hors arènes d’ennemis). Zones les plus riches : Verdoison (grands groupes), puis L’Antre, Terres Lointaines, Sombrevale, Marches Érodées, Vermiterres, Coquibois, Bilesac. Crâne-Tyran : prérequis Prise ferme ; casse le Fragment de couronne sur son cadavre et rapporte-le au Mur (Lourd collier de perles, 220 Perles). Attention : une fois ce souhait fait, et dès que tu as visité les Marches Érodées, la Citadelle ou le Chemin du Pécheur, s’asseoir au banc du Gouffre d’Os a 30 % de chances de déclencher un 2e Crâne-Tyran qui détruit le campement. Évite ce banc (utilise la Clochevoie ou un autre banc).
+### PNJ et souhaits (hors %)
+- **Les puces perdues** · Mooshka (Mur du Gouffre d’Os, L’Antre). Acte 1. Prérequis : aucun. Récompense : Breuvage des puces. L’objet se coche dans Objets : Breuvage des puces (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Vêtements de pèlerin** · Habitants du Gouffre d’Os (Mur du Gouffre d’Os). Acte 1. Prérequis : aucun. Récompense : Collier de perles. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Scaralex explosif** · Habitants du Gouffre d’Os (Mur du Gouffre d’Os). Acte 1. Prérequis : aucun. Récompense : Médaillon de souvenir. L’objet se coche dans Objets : Médaillon n°4 — Gouffre d’Os (hors %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Châtiment du Tyran** · Habitants du Gouffre d’Os (Mur du Gouffre d’Os). Acte 1. Prérequis : aucun. Récompense : Lourd collier de perles. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Réparations de Gouffre d’Os** · Flick le Réparateur (Mur du Gouffre d’Os). Acte 1. Prérequis : aucun. Récompense : Condition pour Un pont salvateur. Compte pour Soie et âme. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Un pont salvateur** · Flick le Réparateur (Mur du Gouffre d’Os). Acte 1. Prérequis : Réparations de Gouffre d’Os. Récompense : Pont destructible ; condition pour Symbole d’espoir. Compte pour Soie et âme. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Symbole d’espoir** · Flick (Mur du Gouffre d’Os). Acte 2. Prérequis : Un pont salvateur. Récompense : Statue de Flick ; Statuette d’Hornet. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Mur à souhaits du Gouffre d’Os** · Le village affiche ses souhaits au Mur (puces, pèlerins, Scaralex, Châtiment du Tyran, travaux de Flick). Relis-le à chaque retour : de nouveaux souhaits apparaissent quand l’acte change. **Tout le jeu.** :: Déduit (liste des souhaits du wiki)
+- **Sula et Skynx (Âme d’acier)** · Sula (une salle du Gouffre d’Os) est liée au souhait de Zi. Skynx remplace Styx et rachète les Dévoreurs de Soie, de 46 à 154 Perles. **Après le souhait de Zi.** :: Sourcé (wiki Âme d’acier) ; lieu de Sula : 2 sources sur 3 disent Gouffre d’Os
+- **Boutique : Pebb** (Gouffre d’Os) · vend : Broche magnétite (120 Perles), Fragment de masque n°1 (300 Perles), Clé simple (500 Perles). Prends le temps de lui parler à chaque visite. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 
-## z3 | L’Antre | - | 8 objet(s), 3 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2, Acte 3. L’ordre des lignes ne dit rien sur ton trajet.
+## z3 | L’Antre | - | 8 objet(s), 3 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
 - {{straight-pin}} **Dardillon** : L’Antre : à l’intérieur de la cellule de Grindle. Accès : rien de spécial noté. {t.dard}
 - {{druid-s-eye}} **Œil druidique** : Souhait Cueillette de baies verdissantes (Druide Forestier, Verdoison). Les Yeux druidiques (amélioration) sont facultatifs. {t.oeil}
@@ -1533,19 +1549,14 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{tool-pouch}} **Sac à outils (amélioration 1)** : Mini-jeu de cibles de L’Antre (gagner assis au banc). Accès : rien de spécial noté. {po1}
 - {{memory-locket}} **Médaillon n°5 — L’Antre** : Au nord-est de la station des Clochevoies (Prise ferme). Accès : saut mural (Prise ferme). {l5}
 - {{flea}} **Puce n°1 — L’Antre** : Quelques sauts de plateformes depuis le début de la salle (Bête des Cloches vaincue + sanctuaire de Clochelle actif). Accès : rien de spécial noté. {pu1}
-### PNJ, souhaits et boutiques
-- **Acte 1** · Rencontrer **Shakra** (ignorer ses cartes pour l’instant) et aller à gauche vers la première compétence. Sur le chemin, un mur destructible cache une **Relique** : la prendre (elle se vend pour des Perles).
-- **Acte 1** · Voyage rapide à **Gouffre d’Os** : accepter toutes les quêtes disponibles au Mur à souhaits, puis revenir à L’Antre.
-- **Acte 1** · Aller vers la droite (direction Quais Profonds) en tuant le plus de **Pèlerins** possible (souhait Vêtements de pèlerin). Mur destructible sur le chemin : 1er **Métal artisanal**.
-- **Acte 2** · Voyage rapide à L’Antre : retrouver le **Druide Forestier**. Il donne la **Soupe de baies verdissantes** (ingrédient du souhait Papilles délicates de Pharloom).
-- **Acte 2** · Parler au **Maître des puces Mooshka** pour lui rendre compte des puces trouvées (souhait **Les puces perdues**). Il déménage ensuite : ne pas accepter de l’accompagner pour l’instant.
-- **Acte 3** · Voyage rapide à Gouffre d’Os : **Ancienne Chapelle**, parler aux **Chamans Escargots** pour débloquer l’objectif suivant.
+### PNJ et souhaits (hors %)
+- **Cueillette de baies verdissantes** · Druide Forestier (Verdoison, Mur du Gouffre d’Os). Acte 1. Prérequis : aucun. Récompense : Œil druidique. L’objet se coche dans Objets : Œil druidique (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
 ### Boss
 - {{b-bell-beast}} [B] **Bête des Cloches** · danger 2-3/5 · Acte 1, après la Lance soyeuse. Préparation : Lente : lis les nuages de poussière (charge, bond, éclat), évite le contact (2 dégâts). Sauvegarde avant : c’est la première vraie épreuve. :: Sourcé (wiki, guides Steam)
 - {{b-skull-tyrant}} [B] **Crâne-Tyran** · danger 2-3/5 · Acte 1 ; 2e combat au Gouffre d’Os ; à faire avant l’Acte 3 (il devient fil noir). Préparation : Invulnérable par le haut ; la zone sous l’arène où il n’accède pas sert à se soigner. Tous ses coups font 2 dégâts. :: Sourcé (wiki)
 - {{b-bell-eater}} [B] **Dévoreur de Cloches** · danger 3/5 · Acte 3 seulement, à la place de la Bête des Cloches. Préparation : Test de patience : vise l’arrière, son motif se répète. Survivre assez longtemps fait venir la Bête des Cloches. :: Sourcé (guide Steam)
 
-## z4 | Quais Profonds | - | 13 objet(s), 2 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2, Acte 3. L’ordre des lignes ne dit rien sur ton trajet.
+## z4 | Quais Profonds | - | 13 objet(s), 2 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
 - {{sting-shard}} **Mortaille** : Achetée à la Fille de la Forge (Quais Profonds) : 140 Perles + 1 Métal artisanal. {t.mort}
 - {{flintslate}} **Silexium** : Quais Profonds, partie basse (accès par les Terres Lointaines avec le Serrefil) : un levier ouvre l’accès, aucune clé nécessaire. Accès : harpon (Serrefil). {t.silex}
@@ -1560,13 +1571,13 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{flea}} **Puce n°2 — Quais Profonds** : Derrière un mur destructible, à gauche de la station des clochevoies des Quais Profonds. Accès : rien de spécial noté. {pu2}
 - {{flea}} **Puce n°3 — Quais Profonds** : À gauche de l’endroit où l’on obtient le Pas rapide : frapper le levier en haut à droite de la salle. Accès : Pas rapide. {pu3}
 - {{flea}} **Puce n°4 — Quais Profonds** : Section supérieure, atteinte avec le Serrefil sur les anneaux au milieu de la salle en dessous. Accès : harpon (Serrefil). {pu4}
-### PNJ, souhaits et boutiques
-- **Acte 3** · Voyage rapide aux **Quais Profonds** : rencontrer la **Fille de la Forge** et **Ballow**. Parler à Ballow déclenche l’objectif suivant.
+### PNJ et souhaits (hors %)
+- **Boutique : Fille de la Forge** (Quais Profonds) · vend : Mortaille (140 Perles + 1 Métal artisanal), Cloche de magma (110 Perles + 1 Métal artisanal). Prends le temps de lui parler à chaque visite. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 ### Boss
 - {{b-lace}} [B] **Lace (1er combat)** · danger 4/5 · Acte 1, après le Pas rapide. Préparation : Laisse-la attaquer d’abord, frappe pendant ses ouvertures, ne frappe pas quand elle est prête à parer. Sauvegarde avant. :: Sourcé (guides Steam)
 - {{b-forebrothers-signis-and-gron}} [B] **Frères Précurseurs Signis et Gron** · danger 3-4/5 · Acte 2, à finir avant l’Acte 3 (fil noir). Préparation : Cloche de magma équipée (lave sur les côtés : 1+2 dégâts avec, 2+2 sans). Vise le frère de mêlée, ignore le lanceur de pique, reste loin des bords. :: Sourcé (wiki, guide Steam)
 
-## z5 | Terres Lointaines | - | 10 objet(s), 4 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2, Acte 3. L’ordre des lignes ne dit rien sur ton trajet.
+## z5 | Terres Lointaines | - | 10 objet(s), 4 boss. Moments d’après le guide du 100 % : Acte 2, Acte 3. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
 - {{weighted-belt}} **Anneau lourd** : Acheté à Mort (Repos du Pèlerin, Terres Lointaines) : 160 Perles. {t.anneau}
 - {{silkspeed-anklets}} **Bracelets vifsoie** : Tisse-nid de Cindril, Terres Lointaines. Accès : Aiguilline. {t.vifsoie}
@@ -1578,10 +1589,12 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{memory-locket}} **Médaillon n°2 — Terres Lointaines** : Acheté à Mort (Repos du Pèlerin) : 150 Perles (Actes 1-2). En Acte 3 : chez Grindle, 250 Perles. Accès : Acte 3. {l2}
 - {{flea}} **Puce n°6 — Terres Lointaines** : Dans une cage, avec un piège à cage juste devant. Accès : rien de spécial noté. {pu6}
 - {{flea}} **Puce n°7 — Terres Lointaines** : Porte verrouillée côté Repos du Pèlerin : passer par une zone secrète de la station des clochevoies (Cape flottante + Prise ferme). Accès : Cape flottante, saut mural (Prise ferme). {pu7}
-### PNJ, souhaits et boutiques
-- **Acte 1** · Sortie en bas à droite : **Couturière**. S’asseoir sur le banc et accepter son souhait **Épines flexibles**.
-- **Acte 1** · Revenir au grand couloir : salle en haut à droite pour débloquer le voyage rapide, puis continuer par le haut à droite jusqu’à **Sherma** (ne pas lui parler).
-- **Acte 3** · Sauvegarde automatique : mets-la à profit. Mélodie des Bestiots vers Clochelle : un nouveau souhait de poupée volée apparaît (**Chasseur de l’ombre**).
+### PNJ et souhaits (hors %)
+- **Épines flexibles** · Couturière (Terres Lointaines). Acte 1. Prérequis : aucun. Récompense : Cape flottante. Compte pour Soie et âme. La Cape flottante est indispensable pour la suite. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Chasseur de l’ombre** · Gilly (Terres Lointaines, Mur de Clochelle). Acte 3. Prérequis : aucun. Récompense : Fragment de masque. L’objet se coche dans Objets : Fragment de masque n°20 (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Sprint : Le plus rapide de Pharloom** · Vif (Terres Lointaines, Mur de Clochelle). Acte 3. Prérequis : gagner 3 courses. Récompense : Collier de perles ; Fragment de bête ; Fragment de masque. L’objet se coche dans Objets : Fragment de masque n°18 (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Couturière** · Assieds-toi à son banc : elle propose Épines flexibles (récompense : la Cape flottante, indispensable). Farmer 25 Cœurs d’épine peut se faire en quittant au menu puis rechargeant. **Acte 1.** :: Sourcé (guide du 100 %)
+- **Boutique : Mort** (Repos du Pèlerin, Terres Lointaines) · vend : Anneau lourd (160 Perles), Sac à outils (amélioration 2), Médaillon n°2 — Terres Lointaines (150 Perles). Prends le temps de lui parler à chaque visite. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 ### Boss
 - {{b-fourth-chorus}} [B] **Quatrième Chorale** · danger 3/5 · Acte 1. Préparation : Peut s’esquiver (Cape flottante, saut en course) ou se tuer vite. Attention au balayage de la main ; ne tombe pas dans les trous du plaquage, surtout sans Cloche de magma. :: Sourcé (wiki, guides Steam)
 - {{b-savage-beastfly}} [B] **Volpeste Enragée (Terres Lointaines)** · danger 4/5 · Acte 2, après la lave. Préparation : Même combat que la première, PV plus élevés ; ses frappes ne portent que sur une plateforme de distance. Cloche de magma pour la lave. :: Sourcé (wiki)
@@ -1595,6 +1608,8 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{beast-crest}} **Emblème Bête** : Chapelle de la Bête (Sentier du Chasseur) : vaincre la Volpeste Enragée. Accès : rien de spécial noté. {e.bete}
 - {{memory-locket}} **Médaillon n°1 — Sentier du Chasseur** : Sous la Chapelle de la Bête (au sud). Accès : rien de spécial noté. {l1}
 - {{flea}} **Puce n°5 — Sentier du Chasseur** : Après un petit défi de plateformes (Skarragarde de l’entrée vaincu). Accès : rien de spécial noté. {pu5}
+### PNJ et souhaits (hors %)
+- **Boutique : Skarr Tacheté** (Sentier du Chasseur) · vend : Courbe-serre (140 Perles), Masque fissuré (260 Perles). Prends le temps de lui parler à chaque visite. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 ### Boss
 - {{b-savage-beastfly}} [B] **Volpeste Enragée (Sentier du Chasseur)** · danger 4/5 · Acte 2, avec tous tes masques ; à faire avant l’Acte 3. Préparation : Une des morts les plus citées en Âme d’acier. Attends d’être bien équipé (Cloche de magma, outil de zone contre les larves). Vol bas = ruée : saute ou rebondis ; le bon moment pour frapper est juste après la 3e ruée. :: Sourcé (wiki, guides Steam, forum)
 
@@ -1617,11 +1632,11 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{flea}} **Puce n°10 — Sombrevale (tour gauche)** : Sommet de la tour de gauche (Prise ferme). Accès : saut mural (Prise ferme). {pu10}
 - {{flea}} **Puce n°11 — Sombrevale (Kratt)** : Kratt, derrière un mur destructible au-dessus de Mi-Chemin (Prise ferme). Libéré, il ouvre un spa à la Caravane. Accès : saut mural (Prise ferme). {pu11}
 - {{flea}} **Puce n°19 — Fonderie** : Pas atteignable depuis la Fonderie : passer par le Bosquet de Feu Follet, derrière un plafond destructible, puis quelques défis de plateformes (Prise ferme + Cape de plumes). Accès : double saut (Cape de plumes), saut mural (Prise ferme). {pu19}
-### PNJ, souhaits et boutiques
-- **Acte 1** · Rencontrer **Nuu** et accepter le souhait **Informations : Insectes de Pharloom** (Journal du Chasseur).
-- **Acte 1** · Grimper la tour. Par une porte de droite : **Garmond & Zaza** (leur parler pour qu’ils apparaissent plus tard). Sortir par la gauche et ouvrir le raccourci.
-- **Acte 2** · Demander à **Yarnaby** de retirer le parasite : souhait **Chirurgie parasitaire** (il faut des **Épines d’acier**).
-- **Acte 2** · Retourner au Chemin du Pécheur (tu ne peux pas te soigner tant que tu es infecté). En chemin : sauver le coursier **Pill** (souhait **Mon frère disparu**).
+### PNJ et souhaits (hors %)
+- **Chirurgie parasitaire** · Yarnaby (Sombrevale). Acte 2. Prérequis : aucun. Récompense : Emblème Sorcière. L’objet se coche dans Objets : Emblème Sorcière (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Nettoyage de corbotères** · Creige (Mi-Chemin, Mur de Clochelle). Acte 1. Prérequis : aucun. Récompense : Kit de fabrication. Compte pour Soie et âme. L’objet se coche dans Objets : Kit de fabrication (amélioration 2) (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Informations : Insectes de Pharloom** · Nuu (Mi-Chemin). Acte 1. Prérequis : remplir 100 entrées du Journal du Chasseur. Récompense : Sac à outils agrandi ; succès Chasseur enthousiaste. L’objet se coche dans Objets : Sac à outils (amélioration 3) (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Garmond et Zaza** · Parle-leur à la tour de Sombrevale : ils apparaissent ensuite plus tard dans le jeu. Perdre contre eux ne supprime pas la sauvegarde (exception du mode), mais les piques comptent comme une vraie mort (portée ambiguë). **Acte 1, puis plus tard.** :: Sourcé (guide du 100 %, wiki Âme d’acier), Incertain pour la suite
 ### Boss
 - {{b-moorwing}} [B] **Ailebrume** · danger 4/5 · Acte 1 ; à faire avant l’Acte 3 (elle devient noire). Préparation : Mortelle pour plusieurs joueurs. Reste à distance, attire-la au bord sûr, frappes vers le bas. Peut être évitée. Masque fissuré réparé. :: Sourcé (forum, guides)
 - {{b-father-of-the-flame}} [B] **Père de la Flamme** · danger 3-4/5 · Acte 2 (Bosquet de Feu Follet). Préparation : Cloche de magma obligatoire sinon la zone est « un cauchemar ». Fais 2 attaques, esquive, répète. :: Sourcé (guide Steam)
@@ -1639,8 +1654,9 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{mask-shard}} **Fragment de masque n°5** : Centre de Coquibois : au bout d’un défi de plateformes, derrière un mur destructible. Accès : rien de spécial noté. {m5}
 - {{flea}} **Puce n°12 — Clochelle** : Après avoir vaincu Sœur Écorceuse, aller à droite : tunnel le plus haut des Clocheveines (Prise ferme). Accès : saut mural (Prise ferme). {pu12}
 - {{flea}} **Puce n°13 — Coquibois** : Sous des plateformes avec des ennemis immobiles. Accès : rien de spécial noté. {pu13}
-### PNJ, souhaits et boutiques
-- **Acte 1** · Ouvrir le raccourci à gauche, sortir par la droite : **Clochelle**. Accepter toutes les nouvelles quêtes.
+### PNJ et souhaits (hors %)
+- **Rite de réincarnation** · Griseracine (Coquibois). Acte 2. Prérequis : aucun. Récompense : Emblème Maudit. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Rituel de pollip** · Griseracine (Coquibois). Acte 1. Prérequis : aucun. Récompense : Bourse de pollip. L’objet se coche dans Objets : Bourse de pollip (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
 ### Boss
 - {{b-sister-splinter}} [B] **Sœur Écorceuse** · danger 2/5 · Acte 1 (facultative). Préparation : Saut puis coup vers le haut, éloigne-toi avant ses griffes. Tu peux la sauter. :: Sourcé (guides, article)
 - {{b-nyleth}} [B] **Florinelle** · danger 3/5 · Acte 3 (Cœur sylvestre). Préparation : Prise ferme nécessaire quand la plateforme disparaît ; reste accroché au mur, outils à distance. :: Sourcé (article, guide Steam)
@@ -1657,13 +1673,25 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{memory-locket}} **Médaillon n°7 — Clochelle** : Acheté à Frey : 330 Perles, après Sauvetage : La ville tissée. {l7}
 - {{memory-locket}} **Médaillon n°19 — Clochelle (Acte 3)** : Au-dessus du Clochetoit, Acte 3 (Élan de soie). Accès : Élan de soie, Acte 3. {l19}
 - {{memory-locket}} **Médaillon n°20 — Terres Lointaines (Acte 3)** : À l’est de Karmelita, Acte 3 (Élan de soie ; vaincre le Skarragarde corrompu). Accès : Élan de soie, Acte 3. {l20}
-### PNJ, souhaits et boutiques
-- **Acte 2** · Redescendre à **Clochelle** : livrer les **Cloches argentées** (souhait terminé).
-- **Acte 2** · Parler à **Pavo** pour débloquer les souhaits de contribution, quitter la zone puis revenir : le 1er don apparaît sur le Mur à souhaits. :: Conditions pour que Rénovation de Clochelle apparaisse (wiki) : avoir amélioré l’Aiguille au moins une fois (Plinney), avoir vendu au moins une Relique à la Chercheuse de Reliques Scrounge, avoir parlé à Pavo, puis être revenu quand Pavo s’est installée sur un banc à l’extérieur de la ville. Si rien n’apparaît : vérifie ces trois points et recharge la zone.
-- **Acte 2** · [!] Donner **250 Perles** au Mur à souhaits : **Rénovation de Clochelle** (prérequis de La gloire de Clochelle et de Soie et âme).
-- **Acte 2** · [$] Acheter le **Bureau** (380 Perles) chez la marchande de Clochelle : il servira à installer la Longue-vue. :: Source : guide Millenium.
-- **Acte 2** · [!] Dans le menu Tâches, vérifier que ces souhaits sont terminés. :: Huile du maître aiguiseur (Plinney, Clochelle : 1 Huile pâle contre l’amélioration d’Aiguille) ; Cloches argentées (8 cloches, rendues au Mur de Clochelle) ; Mon coursier disparu (Tipp, bas de Coquibois ; ouvre l’inventaire supplémentaire de Frey) ; Mon frère disparu (Pill, bas de Sombrevale ; débloque les livraisons) ; Nettoyage de corbotères (Creige, Mi-Chemin, 25 Pelages) ; Papilles délicates de Pharloom (Mergwin, Alcôves de la Chorale). Ne cherche pas Fin de la piste ici : Shakra se fait dans la phase Bilesac.
-- **Acte 3** · Accepter toutes les nouvelles quêtes de Clochelle, s’asseoir au banc.
+### PNJ et souhaits (hors %)
+- **Huile du maître aiguiseur** · Maître Aiguiseur Plinney (Clochelle). Acte 1. Prérequis : aucun. Récompense : Amélioration d’Aiguille. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Mon coursier disparu** · Frey (Mur de Clochelle). Acte 1. Prérequis : aucun. Récompense : Inventaire supplémentaire chez Frey. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Mon frère disparu** · Tipp (Mur de Clochelle). Acte 2. Prérequis : Mon coursier disparu. Récompense : Déverrouille les souhaits Livraison. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **L’appel du héros** · Habitants de Clochelle (Mur de Clochelle). Acte 3. Prérequis : aucun. Récompense : Souvenir du Héros. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Cloches argentées** · Habitants de Clochelle (Mur de Clochelle). Acte 1. Prérequis : aucun. Récompense : Collier de perles. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Cœurs noirs** · Habitants de Clochelle (Mur de Clochelle). Acte 3. Prérequis : aucun. Récompense : Fragment de masque. L’objet se coche dans Objets : Fragment de masque n°19 (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Volpeste enragée** · Habitants de Clochelle (Mur de Clochelle). Acte 2. Prérequis : aucun. Récompense : Fragment de masque. L’objet se coche dans Objets : Fragment de masque n°10 (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Rénovation de Clochelle** · Pavo (Mur de Clochelle). Acte 1. Prérequis : aucun. Récompense : Condition pour La gloire de Clochelle. Compte pour Soie et âme. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **La gloire de Clochelle** · Pavo (Mur de Clochelle). Acte 2. Prérequis : Rénovation de Clochelle. Récompense : Condition pour la Clé d’un Clochetoit. Compte pour Soie et âme. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Matériaux pour Gouffre d’Os** · Tipp et Pill (Clochelle). Acte 2. Prérequis : aucun (Mon frère disparu d’abord). Récompense : 150 (Perles). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Matériaux pour le Repos du Pèlerin** · Tipp et Pill (Clochelle). Acte 2. Prérequis : aucun (Mon frère disparu d’abord). Récompense : 180 (Perles). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Œuf de la reine** · Tipp et Pill (Clochelle). Acte 2. Prérequis : aucun (Mon frère disparu d’abord). Récompense : 260 en Acte 2, 290 en Acte 3 ; Styx agrandit son nid. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Matériaux pour Chantsoir** · Tipp et Pill (Clochelle). Acte 2. Prérequis : aucun (Mon frère disparu d’abord). Récompense : 360 en Acte 2, 410 en Acte 3. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Matériaux pour Pucetopie** · Tipp et Pill (Clochelle). Acte 2. Prérequis : aucun (Mon frère disparu d’abord). Récompense : 410 en Acte 2, 480 en Acte 3. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Laque de protection liquide** · Tipp et Pill (Clochelle). Acte 2. Prérequis : aucun (Mon frère disparu d’abord). Récompense : 560 en Acte 2, 650 en Acte 3. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Matériaux pour le campement des survivants** · Tipp et Pill (Clochelle). Acte 3. Prérequis : aucun. Récompense : 180 ; remplace les livraisons Gouffre d’Os et Repos du Pèlerin. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Maître Aiguiseur Plinney** · Améliore l’Aiguille : niveau 2 gratuit une fois Clochelle sauvée ; niveau 3 : 1 Huile Pâle ; niveau 4 : 450 Perles et 1 Huile ; niveau 5 : 680 Perles et 1 Huile. La dernière Huile n’existe qu’en Acte 3. **Acte 1 pour le 2e niveau ; Acte 2 et 3 ensuite.** :: Sourcé (wiki, page Aiguille)
+- **Boutique : Frey** (Clochelle) · vend : Multisoie (880 Perles), Fragment de bobine n°4 (270 Perles), Médaillon n°7 — Clochelle (330 Perles). Prends le temps de lui parler à chaque visite. Le souhait Mon coursier disparu débloque plus de stock chez lui. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 
 ## z10 | Vermiterres | - | 7 objet(s), 1 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
@@ -1674,9 +1702,9 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{mask-shard}} **Fragment de masque n°2** : Vermiterres, bas de la zone (accès par Verdoison) : derrière un mur destructible juste devant la porte à Clé simple. Accès : Clé simple. {m2}
 - {{memory-locket}} **Médaillon n°6 — Vermiterres** : Au sud-ouest, près du cadavre d’un grand insecte (Clé simple + Prise ferme). Accès : saut mural (Prise ferme), Clé simple. {l6}
 - {{flea}} **Puce n°8 — Vermiterres** : Portée par un Aknide : le vaincre. Accès : rien de spécial noté. {pu8}
-### PNJ, souhaits et boutiques
-- **Acte 2** · Aller à droite puis en haut : souhait **L’assistant de l’alchimiste** (Zylotol). S’asseoir sur le banc (sauvegarde).
-- **Acte 2** · Quitter la zone vers Gouffre d’Os. Avant de sauter tout en bas, descendre par le côté gauche : retrouver le coursier **Tipp** (souhait **Mon coursier disparu**, dernier repère : bas de Coquibois). Puis sauter vers Gouffre d’Os.
+### PNJ et souhaits (hors %)
+- **L’assistant de l’alchimiste** · Alchimiste Zylotol (Vermiterres). Acte 1. Prérequis : aucun. Récompense : Fiole de plasmonium. L’objet se coche dans Objets : Fiole de plasmonium (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Alchimie avancée** · Alchimiste Zylotol (Vermiterres). Acte 3. Prérequis : aucun. Récompense : Glande de plasmonium. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
 ### Boss
 - {{b-plasmified-zango}} [B] **Zango Plasmifié** · danger n/d · Acte 2. Préparation : Aucune stratégie trouvée : sois au maximum de ton équipement. :: Incertain
 
@@ -1685,9 +1713,8 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{tacks}} **Pointes d’acier** : Récompense du souhait Entrailles de férochard (Crull & Benjin, Chemin du Pécheur). {t.pointes}
 - {{barbed-bracelet}} **Bracelet épineux** : Au fond du puits en bas à droite du Chemin du Pécheur. Accès : rien de spécial noté. {t.bracel}
 - {{flea}} **Puce n°15 — Chemin du Pécheur** : Dans une cage ; un Férochard rôde et attaque quand on s’approche. Accès : rien de spécial noté. {pu15}
-### PNJ, souhaits et boutiques
-- **Acte 2** · Rencontrer **Crull & Benjin** : souhait **Entrailles de férochard**.
-- **Acte 2** · Voyage rapide à **Chantsoir** : régler les dons en attente, accepter les nouveaux souhaits.
+### PNJ et souhaits (hors %)
+- **Entrailles de férochard** · Crull et Benjin (Chemin du Pécheur). Acte 1. Prérequis : aucun. Récompense : Pointes d’acier. L’objet se coche dans Objets : Pointes d’acier (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
 ### Boss
 - {{b-disgraced-chef-lugoli}} [B] **Lugoli, Chef Déshonoré** · danger 3/5 · Acte 2 ; à faire avant l’Acte 3 (toujours noir). Préparation : Garde tes distances, 2 ou 3 coups puis esquive. Quand des asticots sortent de l’eau, fonce vers lui : zone sûre. :: Sourcé (guide Steam), nom du boss déduit
 
@@ -1703,21 +1730,21 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{flea}} **Puce n°16 — Bilesac** : Derrière un mur destructible. Accès : rien de spécial noté. {pu16}
 - {{flea}} **Puce n°17 — Bilesac (Orgue de Ventilation)** : À gauche de l’entrée supérieure de l’Orgue de Ventilation (après la traversée des Brumes). Accès : rien de spécial noté. {pu17}
 - {{flea}} **Puce n°18 — Bilesac** : Au-dessus de la salle du banc secret (Prise ferme). Accès : saut mural (Prise ferme). {pu18}
+### PNJ et souhaits (hors %)
+- **Fin de la piste** · Shakra (Mur de Clochelle ; la piste mène à Bilesac). Acte 2. Prérequis : aucun. Récompense : Lance-anneaux. Compte pour Soie et âme. L’objet se coche dans Objets : Lance-anneaux (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Âmes du Piège** · Pour le Piège runique : Âme de la jeune fille (Servante de la Chapelle, Gouffre d’Os), Âme de l’ermite (Ermite de Clochelle), Âme du chercheur (Chaman Escargot après Groal le Grand, Bilesac), puis le Piège runique (Tisse-nid d’Atla). **Fin de l’Acte 2.** :: Sourcé (wiki) ; Incertain pour l’exigence en Âme d’acier
 ### Boss
 - {{b-phantom}} [B] **Fantôme** · danger 4/5 (arène) + 5/5 (Brumes) · Acte 1, après les Brumes. Préparation : Recharge (quitter au menu) à 2 masques ou moins. Saute les attaques parées, évite la lumière de l’attaque aérienne, ne frappe pas de front (Point de croix). Phase 2 : 5 cascades lumineuses puis Pas Brumeux. Le dernier coup est une parade scénarisée. :: Sourcé (wiki, guide Steam)
 - {{b-groal-the-great}} [B] **Groal le Grand** · danger 3/5 · Acte 2 (Bilewater). Préparation : Reste dans les coins, saut mural contre les projectiles ; quand il aspire, saut mural puis dash, 4 coups de rebond ou plus. :: Sourcé (article, guide Steam)
 
-## z13 | Alcôves de la Chorale | - | 4 objet(s), 0 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
+## z13 | Alcôves de la Chorale | - | 4 objet(s), 0 boss. Moments d’après le guide du 100 % : Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
 - {{hivesteel-needle}} **Aiguille d’acier-alvéole** : 1 Huile pâle + 450 Perles. Accès : rien de spécial noté. {n.3}
 - {{memory-locket}} **Médaillon n°10 — Alcôves de la Chorale** : Au-dessus de la Station des Clochevoies, accès par l’est de la Fonderie (après le Fantôme ou Trobbio). Accès : rien de spécial noté. {l10}
 - {{flea}} **Puce n°21 — Alcôves de la Chorale** : Après une section de plateformes. Accès : rien de spécial noté. {pu21}
 - {{flea}} **Puce n°22 — Alcôves de la Chorale** : Derrière un mur destructible (Cape flottante : mécanisme en dessous ; sinon rebond sur les scies). Accès : Cape flottante. {pu22}
-### PNJ, souhaits et boutiques
-- **Acte 1** · Aller à gauche : ennemis qui donnent des Perles (à farmer plus tard) ; un trou mène à un raccourci à ouvrir. [A] Quitter au menu puis recharger : les souhaits de **Chantsoir** se débloquent.
-- **Acte 1** · Accepter la quête qui suit et entrer au **Noyau Mécanique**.
-- **Acte 2** · À Clochelle : le souhait de **Shakra** (« Fin de la piste ») apparaît maintenant que tu as toutes ses cartes. L’accepter. Parler aux coursiers **Tipp & Pill** pour démarrer la livraison du **Lard de coursier**.
-- **Acte 2** · Livraison : facile avec le double saut ; les Marches Érodées se passent en grande partie à coups de Serrefil et de double saut. Livrer le Lard au **Grand Gourmand** : les 5 ingrédients sont maintenant réunis (Soupe de baies verdissantes, Nectar millésimé, Bouefrasse marinée, Écornoix, Lard de coursier). Récompense : **Huile pâle** (et succès Glouton).
+### PNJ et souhaits (hors %)
+- **Papilles délicates de Pharloom** · Mergwin (Alcôves de la Chorale). Acte 2. Prérequis : aucun. Récompense : Huile Pâle ; succès Glouton. Il faut livrer 5 mets, avec une livraison chronométrée : soupe de baies verdissantes, nectar millésimé, lard de coursier, écornoix, bouefrasse marinée (source tierce : Incertain). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
 
 ## z14 | Noyau Mécanique | - | 2 objet(s), 1 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
@@ -1734,6 +1761,8 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{memory-locket}} **Médaillon n°13 — Voûtes des Murmures** : Sous la sortie menant vers l’extérieur. Accès : rien de spécial noté. {l13}
 - {{flea}} **Puce n°29 — Voûtes des Murmures** : Longue section de plateformes ; passage caché derrière les rideaux, salle sous la chambre de l’Archiviste Cardinius (Serrefil + Prise ferme). Accès : saut mural (Prise ferme), harpon (Serrefil). {pu29}
 - {{flea}} **Puce n°30 — Voûtes des Murmures** : Sommet de la salle, en poussant une boîte au milieu gauche (Prise ferme). Accès : saut mural (Prise ferme). {pu30}
+### PNJ et souhaits (hors %)
+- **Archiviste Cardinius** · Apporte-lui le cylindre trouvé dans la Fonderie : cela aide beaucoup pour les Perles. Il est en haut à droite de la salle de Trobbio. **Acte 1, après la Fonderie.** :: Sourcé (guide du 100 %)
 ### Boss
 - {{b-trobbio}} [B] **Trobbio** · danger 3/5 · Acte 1, à la Scène. Préparation : Saute par-dessus le Tourbillon Merveilleux. Avec l’Emblème Vagabond, rebondis sur lui pour des dégâts gratuits ; la parade aide contre les doubles dégâts. :: Sourcé (wiki, guide Steam)
 
@@ -1751,11 +1780,10 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{crafting-kit}} **Kit de fabrication (amélioration 3)** : Douzième Architecte (Fonderie) : 450 Perles. Accès : rien de spécial noté. {ki3}
 - {{memory-locket}} **Médaillon n°11 — Fonderie** : À travers un faux plafond au-dessus des bancs, près du confessionnal. Accès : rien de spécial noté. {l11}
 - {{flea}} **Puce n°20 — Fonderie** : Dans une salle remplie de Transporteurs Mécaniques (Cape de plumes). Accès : double saut (Cape de plumes). {pu20}
-### PNJ, souhaits et boutiques
-- **Acte 2** · [$] Acheter la **Clé de l’architecte** (110 Perles). :: Elle n’est proposée qu’après 25 outils obtenus (confirmé par le wiki). Tu en as largement assez à ce stade de la route.
-- **Acte 2** · [!] Vérifier tes **points de quête** : Soie et âme demande au moins 17 points sur 25. :: Le compte de la route : 1 point chacun pour Cueillette de baies verdissantes, Rituel de pollip, Scaralex explosif, Mon coursier disparu, Mon frère disparu, Huile du maître aiguiseur (point gagné à la 2e amélioration d’Aiguille), Piques de qualité, Entrailles de férochard, Papilles délicates de Pharloom, L’assistant de l’alchimiste, Insectes de Pharloom (Nuu), Cloches argentées, Volpeste enragée, Festin de la couvée (au moment de livrer), La marchande vagabonde, La marchande perdue, L’ultime audience, Robes de la chorale = 18 points. Marge : Vêtements de pèlerin, Châtiment du Tyran, Symbole d’espoir, Mère des lamentations (+4). Les 6 livraisons de Tipp & Pill rapportent 0,5 point chacune, la 1re fois seulement (fragiles : voyager par Clochevoie, Ventrica, Caravane ou Mélodie des Bestiots les détruit). Souhaits obligatoires en plus : Épines flexibles, Un pont salvateur, Nettoyage de corbotères, Fortifier Chantsoir, Fin de la piste (phase suivante), Remède pour les blessés. Objets : Cape flottante, Clé d’un Clochetoit. Divers : Caravane des puces à Pucetopie et Lace vaincue au Berceau (phase d’après).
+### PNJ et souhaits (hors %)
+- **Boutique : Douzième Architecte** (Fonderie) · vend : Roue mécanique (360 Perles + 1 Métal artisanal), Ceinture à dents-de-scie (230 Perles + 1 Métal artisanal), Broclet (140 Perles + 1 Métal artisanal), Emblème Architecte. Prends le temps de lui parler à chaque visite. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 
-## z17 | Chantsoir | - | 6 objet(s), 0 boss. Moments d’après le guide du 100 % : Acte 1, Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
+## z17 | Chantsoir | - | 6 objet(s), 0 boss. Moments d’après le guide du 100 % : Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
 - {{spool-extender}} **Extenseur de bobine** : Acheté à Jubilana (Chantsoir) : 720 Perles. {t.extens}
 - {{reserve-bind}} **Réserve de soie** : Souhait L’ultime audience (Seconde Sentinelle). {t.reserve}
@@ -1763,18 +1791,20 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{spider-strings}} **Fil d’araignée** : Acheté à Jubilana : 320 Perles, après le souhait La marchande perdue. {t.fil}
 - {{mask-shard}} **Fragment de masque n°7** : Vendu par Jubilana (Chantsoir) : 750 Perles, après le souhait La marchande vagabonde. {m7}
 - {{spool-fragment}} **Fragment de bobine n°14** : Vendu par Jubilana : 500 Perles, après le souhait La marchande perdue. {b14}
-### PNJ, souhaits et boutiques
-- **Acte 1** · À Chantsoir : prendre le souhait **Papilles délicates de Pharloom** (Grand Gourmand), utile car on repart bientôt à L’Antre.
-- **Acte 2** · Voyage rapide à **Chantsoir** : parler à **Sherma** et accepter les nouveaux souhaits. Terminer **Piques de qualité** avant d’explorer, et débloquer l’ascenseur de l’**Aile Blanche**.
-- **Acte 2** · Aller à l’Aile Blanche et débloquer l’ascenseur. Descendre jusqu’à voir apparaître le titre « Aile Blanche », puis tuer un ou deux ennemis (cela déclenche plus tard le souhait de Sherma).
-- **Acte 2** · Voyage rapide à Chantsoir : livrer les piques (souhait terminé).
-- **Acte 2** · Banc du Sanctuaire de la Cloche, quitter/recharger : de nouveaux souhaits apparaissent (**Robes de la chorale**, souhait de **Sherma** : Remède pour les blessés).
-- **Acte 2** · Voyage rapide aux Alcôves de la Chorale, aller tout à droite. Dans une salle à gauche avant l’Aile Blanche : retrouver **Jubilana** (souhait **La marchande vagabonde**) : elle s’installe ensuite à Chantsoir.
-- **Acte 2** · Sanctuaire de la Cloche, banc, quitter/recharger : le 2e souhait de Jubilana peut apparaître ; sinon reviens plus tard.
-- **Acte 2** · [A] Farmer les **60 organes** de la Chasseresse (15 rôtis, 35 découpés, 10 en brochette) et les Robes. Voyage rapide à la Clochevoie des Alcôves de la Chorale, tuer les deux ennemis à gauche, retourner au banc et recommencer. :: Brochettes d’organe (10) : Longue pique ou Mortaille. Organes rôtis (15) : dégâts de feu ou d’électricité, avec l’Aiguille après le Silexium, le Pompillo, la Lanterne de flambrume ou l’Orbéclair. Organes découpés (35) : outils à dents (Foreuse du mineur, ou plus tard Ceinture à dents-de-scie et Roue mécanique) ou attaque vers le bas de l’Emblème Bête avec des rebonds. Suis le compte dans l’inventaire. Livraison à la Chasseresse (Conduits Putrides) dans la phase Bilesac ; le souhait Festin de la couvée n’existe plus après le début de l’Acte 3.
-- **Acte 2** · [!] Au Mur à souhaits de **Chantsoir**, donner **300 Perles** : **Édification du sanctuaire de Chantsoir**, puis **500 Perles** : **Fortifier Chantsoir** (prérequis de Soie et âme). :: Édification est disponible dès que le Mur de Chantsoir l’est (cloche du premier sanctuaire de la Citadelle sonnée en début de route). Fortifier demande Édification plus au moins 3 autres souhaits de Chantsoir terminés (Piques de qualité, La marchande vagabonde, Remède pour les blessés suffisent). Quitte la zone et reviens pour voir Fortifier apparaître.
-- **Acte 2** · [!] Faire le souhait **La marchande perdue** (s’il n’est pas fait) : retrouver Jubilana et la ramener à Chantsoir. :: Il apparaît après 5 souhaits de Chantsoir terminés (dont La marchande vagabonde et Fortifier Chantsoir), avoir parlé à Jubilana et avoir la Cape flottante. Elle est au sud-est du Mémorium, près du passage vers les Conduits Putrides (là où le guide la montre). Suis ses affaires éparpillées. Deux vagues d’ennemis : d’abord 3 ennemis, puis 4 ; en les tuant tu la sauves, et elle revient à Chantsoir.
-- **Acte 2** · [$] Acheter 1 **Métal artisanal** chez Jubilana (180 Perles). :: Il t’en faut 8 en tout (Mortaille, Cloche de magma, Roue mécanique, Broclet, Ceinture à dents-de-scie, Tire-soie, Pompillo, Mouchetille) : vérifie ton stock avant les achats chez l’Architecte, qui en prend 4.
+### PNJ et souhaits (hors %)
+- **Remède pour les blessés** · Sherma (Mur de Chantsoir). Acte 2. Prérequis : aucun. Récompense : Fragment de bobine. Compte pour Soie et âme. L’objet se coche dans Objets : Fragment de bobine n°13 (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **La marchande vagabonde** · Habitants de Chantsoir (Mur de Chantsoir). Acte 2. Prérequis : aucun. Récompense : Jubilana s’installe à Chantsoir. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **La marchande perdue** · Habitants de Chantsoir (Mur de Chantsoir). Acte 2. Prérequis : La marchande vagabonde ; Fortifier Chantsoir. Récompense : Inventaire supplémentaire chez Jubilana. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **L’ultime audience** · Seconde Sentinelle (Mur de Chantsoir). Acte 2. Prérequis : aucun. Récompense : Réserve de soie. L’objet se coche dans Objets : Réserve de soie (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Soie et âme** · Surintendant de Chantsoir (Mur de Clochelle ou de Chantsoir). Acte 2. Prérequis : les souhaits marqués « condition pour Soie et âme ». Récompense : Déverrouille l’objectif Détruire : Attrape-âme. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Douleur, angoisse et misère** · Le tourmenté (Mur de Chantsoir). Acte 3. Prérequis : aucun. Récompense : Miroir Noir. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Piques de qualité** · Habitants de Chantsoir (Mur de Chantsoir). Acte 2. Prérequis : aucun. Récompense : Lourd collier de perles. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Robes de la chorale** · Habitants de Chantsoir (Mur de Chantsoir). Acte 2. Prérequis : aucun. Récompense : Lourd collier de perles. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **La mère des lamentations** · Habitants de Chantsoir (Mur de Chantsoir). Acte 2. Prérequis : aucun. Récompense : Lourd collier de perles. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Édification du sanctuaire de Chantsoir** · Surintendant de Chantsoir (Mur de Chantsoir). Acte 2. Prérequis : aucun. Récompense : Condition pour Fortifier Chantsoir. Compte pour Soie et âme. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Fortifier Chantsoir** · Surintendant de Chantsoir (Mur de Chantsoir). Acte 2. Prérequis : Édification du sanctuaire de Chantsoir. Récompense : Condition pour La marchande perdue. Compte pour Soie et âme. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Surintendant de Chantsoir** · Il donne l’objectif Soie et âme une fois que 17 points de quête sur 25 sont réunis (les souhaits marqués « Oui » ci-dessus comptent). Il faut aussi la Cape flottante, la Clé de la Maison-cloche, déplacer la Caravane à Pucetopie et vaincre Lace au Berceau. **Fin de l’Acte 2.** :: Sourcé (wiki, page Soie et âme)
+- **Boutique : Jubilana** (Chantsoir) · vend : Extenseur de bobine (720 Perles), Griffe du grimpeur (350 Perles), Fil d’araignée (320 Perles), Fragment de masque n°7 (750 Perles), Fragment de bobine n°14 (500 Perles), Clé simple (650 Perles, après La marchande vagabonde). Prends le temps de lui parler à chaque visite. Les souhaits La marchande vagabonde puis La marchande perdue ouvrent sa boutique, puis son stock. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 
 ## z18 | Grandes Galeries | - | 3 objet(s), 1 boss. Moments d’après le guide du 100 % : Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
@@ -1799,13 +1829,15 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{spool-fragment}} **Fragment de bobine n°17** : Mémorium, section ouest : depuis le 4e étage (un étage sous la station Ventrica) vers l’ouest, éviter les piques (Cape de plumes + Serrefil). Accès : double saut (Cape de plumes), harpon (Serrefil). {b17}
 - {{memory-locket}} **Médaillon n°16 — Mémorium** : Salle centrale à thème Coquibois, sur la gauche (Cape de plumes). Accès : double saut (Cape de plumes). {l16}
 - {{flea}} **Puce n°23 — Mémorium (Puce Colossal)** : Combat : la Puce Colossal doit être vaincue après sa libération (Cape de plumes). Accès : double saut (Cape de plumes). {pu23}
-### PNJ, souhaits et boutiques
-- **Acte 2** · Tout à droite : carte du Mémorium et passage caché. Si tu as accepté le 2e souhait de **Jubilana** (La marchande perdue), tu la trouves ici.
 
 ## z21 | Conduits Putrides | - | 2 objet(s), 0 boss. Moments d’après le guide du 100 % : Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
 - {{wreath-of-purity}} **Couronne de pureté** : Passage secret des Conduits Putrides. Accès : rien de spécial noté. {t.couronne}
 - {{flea}} **Puce n°28 — Conduits Putrides (Vog)** : Vog, hissée par plusieurs Barnaks puis quelques plateformes. Après lui avoir parlé, elle rejoint la Caravane. Accès : harpon (Serrefil). {pu28}
+### PNJ et souhaits (hors %)
+- **Festin de la couvée** · Chasseresse (Conduits Putrides). Acte 2. Prérequis : aucun. Récompense : Longue-griffe. L’objet se coche dans Objets : Longue-griffe (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Festin de la chasserette** · Chasserette (Conduits Putrides). Acte 3. Prérequis : aucun. Récompense : Longue-griffe. L’objet se coche dans Objets : Longue-griffe (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Témoin : Passage des âges** · Le Héraut (tablette, Conduits Putrides). Acte non précisé. Prérequis : aucun. Récompense : Fil des âges. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
 
 ## z22 | Le Bloc | - | 6 objet(s), 2 boss. Moments d’après le guide du 100 % : Acte 2. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
@@ -1827,8 +1859,8 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{mask-shard}} **Fragment de masque n°12** : Sud-ouest du Mont Fay, à l’ouest du banc (Cape de plumes). Accès : double saut (Cape de plumes). {m12}
 - {{mask-shard}} **Fragment de masque n°17** : Acte 3 : Givreglace, au Mont Fay (Élan de soie). Accès : harpon (Serrefil), conseillé, Élan de soie, Acte 3. {m17}
 - {{flea}} **Puce n°26 — Mont Fay** : Gelée dans la glace : la libérer d’un coup d’aiguille (Prise ferme). Accès : saut mural (Prise ferme). {pu26}
-### PNJ, souhaits et boutiques
-- **Acte 3** · Aller aux Marches Érodées : lire la lettre de la **Maîtresse de la Pique**, qui t’indique où la trouver (souhait **Résolution fatale**).
+### PNJ et souhaits (hors %)
+- **Boutique : Shakra** (Mont Fay ; il vend aussi les cartes des zones) · vend : Boussole (70 Perles). Prends le temps de lui parler à chaque visite. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 ### Boss
 - {{b-pinstress}} [B] **Maîtresse de la Pique** · danger 3/5 · Acte 3. Préparation : Elle reste en l’air : patience, frappe à l’atterrissage, parade. :: Sourcé (guide Steam)
 
@@ -1844,8 +1876,10 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{crafting-kit}} **Kit de fabrication (amélioration 4)** : Grindle (Marches Érodées), Acte 3. Accès : Acte 3. {ki4}
 - {{memory-locket}} **Médaillon n°8 — Marches Érodées** : Salle au-dessus du premier banc (Prise ferme). Accès : saut mural (Prise ferme), harpon (Serrefil). {l8}
 - {{flea}} **Puce n°14 — Marches Érodées** : Sommet de la salle à gauche de la station des clochevoies (Prise ferme). Accès : saut mural (Prise ferme). {pu14}
-### PNJ, souhaits et boutiques
-- **Acte 3** · [$] **Grindle** : Marque du voleur et Dés de magnétite ne sont plus à acheter si tu les as déjà ; sinon, c’est ici (350 / 300 Perles).
+### PNJ et souhaits (hors %)
+- **Résolution fatale** · Maîtresse de la Pique (Marches Érodées). Acte 3. Prérequis : aucun. Récompense : Insigne de la Pique. L’objet se coche dans Objets : Insigne de la Pique (compte dans le %). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Acier : Le serviteur disparu** · Prophétesse d’Acier Zi (Marches Érodées). Mode Âme d’acier seulement. Prérequis : aucun. Récompense : Pierre régénérante (boss Salvation Invoquée). :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Boutique : Grindle** (Marches Érodées) · vend : Serrepince (740 Perles), Marque du voleur (350 Perles), Fragment de bobine n°18 (680 Perles), Clé simple (600 Perles, Acte 3). Prends le temps de lui parler à chaque visite. :: Sourcé (fiches d’objets du 100 %, notes de recherche). Acheter ne change le % que pour les objets de la liste Objets.
 ### Boss
 - {{b-last-judge}} [B] **Dernière Juge** · danger 3-4/5 · Acte 2 (Grand Portail). Préparation : Depuis le patch 5, son explosion finale fait 2 dégâts : n’approche pas à la fin. Frappe sans relâche pour l’étourdir, surveille la phase du feu (ne reste pas immobile quand l’encensoir s’enflamme). :: Sourcé (guide, notes de patch)
 - {{b-great-conchflies}} [B] **Volucornes** · danger 2-3/5 · Acte 2, avant la Maîtresse de la Pique. Préparation : Les deux volucornes partagent leurs PV : en frapper une suffit. :: Sourcé (guide Steam)
@@ -1870,6 +1904,8 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{sylphsong}} **Sylphonie** : Tisse-nid d’Atla : lier Eva une fois 32 emplacements d’emblème débloqués. Accès : rien de spécial noté. {a.sylph}
 - {{mask-shard}} **Fragment de masque n°6** : Est du Tisse-nid d’Atla, derrière un mur destructible (Aiguilline requise). Accès : Aiguilline. {m6}
 - {{spool-fragment}} **Fragment de bobine n°5** : Tisse-nid d’Atla : téléporteur vers la zone inférieure, grimper le mur de droite, aller à l’ouest jusqu’au 1er Mawrok, passage supérieur, 2e Mawrok, se laisser tomber (Aiguilline). Accès : Aiguilline. {b5}
+### PNJ et souhaits (hors %)
+- **Eva** · Parle-lui une fois que tu as des Médaillons : elle te lie pour la Sylphonie quand 32 emplacements d’emblème sont débloqués (15 Médaillons suffisent si tu n’en as pas mis sur l’Emblème Chasseur). Elle refuse d’approcher Hornet tant qu’elle porte l’Emblème Maudit. **À partir de la fin de l’Acte 2.** :: Sourcé (wiki, pages Médaillon et Sylphonie)
 ### Boss
 - {{b-moss-mother}} [B] **Mères Forestières (Tisse-nid d’Atla)** · danger 3/5 · Acte 2 : les deux, avant l’Acte 3 (elles deviennent noires). Préparation : Même approche que la première mère ; vaincre les deux donne le Tisséclat. :: Sourcé (wiki)
 
@@ -1877,9 +1913,6 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 ### Objets à récupérer
 - {{pale-nails}} **Griffes pâles** : Acte 3 : tisser le bras de la Mère Supérieure Soie au Berceau (Élan de soie requis). Accès : Élan de soie, Acte 3. {s.griffes}
 - {{silk-heart}} **Cœur de soie n°3** : Vaincre Lace au Berceau : Mélotrine requise. {c3}
-### PNJ, souhaits et boutiques
-- **Acte 2** · Retourner à Chantsoir pour commencer l’objectif **Soie et âme**. Le Surintendant le donne, ou le Mur à souhaits de Clochelle.
-- **Acte 2** · Retourner à **Chantsoir** : livrer tout ce qu’il faut pour le **piège de Mère Supérieure Soie**.
 ### Boss
 - {{b-lace}} [B] **Lace (Berceau)** · danger 5/5 · Acte 2, après la Mélotrine. Préparation : Son attaque tournante vers le haut te suit ; Œil du druide utile, Mouchetilles en 2e phase. Sauvegarde avant. Donne le Cœur de soie n°3. :: Sourcé (guides Steam)
 - {{b-grand-mother-silk}} [B] **Mère Supérieure Soie** · danger 4-5/5 · Fin de l’Acte 2. Préparation : 8 masques (guide « lel »). Apprends ses télégraphes, phase 3 : burst avec des outils (Cogflies). Termine d’abord Chirurgie parasitaire : maudite, cette victoire ferme l’Acte 3. :: Sourcé (guides), malédiction déduite
@@ -1889,9 +1922,9 @@ const ROUTE_STEEL = `## z0 | À savoir avant de jouer | - | Règles du mode Âme
 - {{egg-of-flealia}} **Œuf de Pucelia** : Offert par Mooshka après avoir trouvé les 30 Puces. {t.oeuf}
 - {{spool-fragment}} **Fragment de bobine n°9** : Donné par la Caravane des puces quand elle monte au Grand Portail (12 puces sauvées + Dernière Juge vaincue). {b9}
 - {{tool-pouch}} **Sac à outils (amélioration 4)** : Donné par la Caravane des puces à Pucetopie (Lac Pâle) : 22 puces + Lac Pâle visité. {po4}
-### PNJ, souhaits et boutiques
-- **Acte 2** · [!] À Sombrevale, parler au **Maître des puces Mooshka** pour avancer la quête des puces. Accepter de voyager ensemble jusqu’à la zone suivante.
-- **Acte 3** · Quitter/recharger à Clochelle : nouveau souhait **Réjouissements de la fin**.
+### PNJ et souhaits (hors %)
+- **Réjouissements de la fin** · Mooshka (Pucetopie, Mur de Clochelle). Acte 3. Prérequis : aucun. Récompense : Huile Pâle. :: Sourcé (wiki FR, page Souhaits). Cocher ce souhait ne change pas le %.
+- **Mooshka et la Caravane des puces** · Rends-lui compte des puces sauvées. Paliers : 5 puces = Breuvage des puces ; 12 = Fragment de bobine (Dernière Juge vaincue) ; 22 = 4e Sac à outils (Lac Pâle visité) ; 30 = Œuf de Pucelia. Elle déménage ensuite : ne l’accompagne pas trop tôt. **Acte 1 à 3.** :: Sourcé (wiki, page Puces)
 
 ## z29 | Abysses | - | 1 objet(s), 1 boss. Moments d’après le guide du 100 % : Acte 3. L’ordre des lignes ne dit rien sur ton trajet.
 ### Objets à récupérer
@@ -1962,7 +1995,11 @@ var HOME = (function () {
   function countDone(d, order) { var n = 0; (order || []).forEach(function (id) { if (d && d[id]) n++; }); return n; }
   /* Étapes cochées qui ne sont pas dans le parcours (donc bonus) : elles survivent à « Terminer la run ». */
   function bonusOnly(d, order) { var o = {}, inO = {}; (order || []).forEach(function (id) { inO[id] = 1; }); Object.keys(d || {}).forEach(function (id) { if (!inO[id]) o[id] = d[id]; }); return o; }
-  return { LIMIT: LIMIT, countDone: countDone, bonusOnly: bonusOnly, hm: hm, a30: a30, speed: speed, steel: steel, toMin: toMin, segments: segments, bestRun: bestRun, compare: compare };
+  /* Case de section (phase) : 'all', 'some' ou 'none' selon les étapes cochées ; un tap coche tout sauf si tout est déjà fait. */
+  function sectionState(d, ids) { var n = 0; (ids || []).forEach(function (id) { if (d && d[id]) n++; }); return !n ? 'none' : n === ids.length ? 'all' : 'some'; }
+  function sectionNext(state) { return state !== 'all'; }
+  function setSection(d, ids, on) { ids.forEach(function (id) { if (on) d[id] = 1; else delete d[id]; }); return d; }
+  return { LIMIT: LIMIT, sectionState: sectionState, sectionNext: sectionNext, setSection: setSection, countDone: countDone, bonusOnly: bonusOnly, hm: hm, a30: a30, speed: speed, steel: steel, toMin: toMin, segments: segments, bestRun: bestRun, compare: compare };
 })();
 if (typeof module !== 'undefined') module.exports = HOME;
 
@@ -2246,12 +2283,13 @@ function targetTxt(t) { if (!t) return ''; var m = parseHM(t); return ' · repè
 function buildRoute() {
   var h = [];
   PHASES.forEach(function (p) {
-    h.push('<section class="phase" id="ph-' + p.id + '" data-ph="' + p.id + '">' +
+    var sel = CUR === 'speed' && !p.bonus ? '<label class="psel"><input type="checkbox" class="pcb" data-sec="' + p.id + '" aria-label="Toute la section faite : ' + esc(plain(p.title).slice(0, 80)) + '"><span class="pbox" aria-hidden="true"></span></label>' : '';
+    h.push('<section class="phase" id="ph-' + p.id + '" data-ph="' + p.id + '">' + (sel ? '<div class="phrow">' + sel : '') +
       '<button class="phead" type="button" data-toggle="' + p.id + '" aria-expanded="false" aria-controls="pb-' + p.id + '">' +
       '<span class="pname">' + esc(p.title) + '</span>' +
       '<svg class="pchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
       '<span class="pmeta"><span class="pc">0/0</span>' + esc(targetTxt(p.target)) + '<span class="pt"></span></span>' +
-      '<span class="pbar"><i></i></span></button>' +
+      '<span class="pbar"><i></i></span></button>' + (sel ? '</div>' : '') +
       '<div class="pbody" id="pb-' + p.id + '">' + (p.intro ? '<details class="pintro"><summary>À propos de cette phase</summary><p>' + fmt(p.intro) + '</p></details>' : ''));
     p.groups.forEach(function (g, gi) {
       var zl = zoneLink(g.title), mids = CURGM[p.id + '-' + (gi + 1)], mh = '', gk = p.id + '-' + (gi + 1);
@@ -2681,6 +2719,8 @@ function refreshAll() {
     $('.pc', el).textContent = c.done + '/' + c.total;
     $('.pbar i', el).style.width = (c.total ? c.done / c.total * 100 : 0) + '%';
     el.classList.toggle('complete', c.total > 0 && c.done === c.total);
+    var sc = $('.pcb', el);
+    if (sc) { var ss = c.total > 0 ? (c.done === c.total ? 'all' : c.done ? 'some' : 'none') : 'none'; sc.checked = ss === 'all'; sc.classList.toggle('part', ss === 'some'); }
     var t = tval(p.id); $('.pt', el).textContent = t ? ' · noté ' + t : '';
     if (!UI.q) {
       $$('.group', el).forEach(function (g) {
@@ -2749,6 +2789,13 @@ function toggleStep(id, on) {
   if (li && li.offsetHeight) d = li.getBoundingClientRect().top - ly;
   else if (nx && nx.offsetHeight) d = nx.getBoundingClientRect().top - ny;
   if (d) window.scrollBy(0, d);
+}
+/* Case de section (speedrun) : coche ou décoche toutes les étapes d'une phase ; les cases des étapes restent libres. */
+function toggleSection(pid) {
+  var ids = [];
+  PH[pid].groups.forEach(function (g) { g.steps.forEach(function (x) { ids.push(x.id); }); });
+  HOME.setSection(S.d, ids, HOME.sectionNext(HOME.sectionState(S.d, ids)));
+  touch(); now.id = null; refreshAll();
 }
 function setOpen(id, open) {
   var el = $('#ph-' + id); if (!el) return;
@@ -3007,6 +3054,7 @@ function resetClick(b) {
 function bind() {
   $('#route-list').addEventListener('change', function (e) {
     var cb = e.target.closest('.cb'); if (cb) toggleStep(cb.getAttribute('data-id'), cb.checked);
+    var sc = e.target.closest('.pcb'); if (sc) toggleSection(sc.getAttribute('data-sec'));
   });
   function common(e) {
     var ib = e.target.closest('.sbtn[data-act="img"]');
