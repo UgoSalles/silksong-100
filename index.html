@@ -2794,8 +2794,13 @@ function toggleStep(id, on) {
 function toggleSection(pid) {
   var ids = [];
   PH[pid].groups.forEach(function (g) { g.steps.forEach(function (x) { ids.push(x.id); }); });
+  var el = $('#ph-' + pid), y = el.getBoundingClientRect().top;
   HOME.setSection(S.d, ids, HOME.sectionNext(HOME.sectionState(S.d, ids)));
+  /* Pas de dépliage automatique : on garde la section fermée (ou ouverte) comme l'utilisateur l'a laissée, et on la garde au même endroit de l'écran. */
+  lastGK = curGK();
   touch(); now.id = null; refreshAll();
+  var d = el.getBoundingClientRect().top - y;
+  if (d) window.scrollBy(0, d);
 }
 function setOpen(id, open) {
   var el = $('#ph-' + id); if (!el) return;
