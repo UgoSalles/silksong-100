@@ -1,4 +1,4 @@
-# Silksong 100 %
+# Silksong : mes objectifs
 
 Route de 100 % de *Hollow Knight: Silksong* en moins de 30 h, à cocher étape par étape, sur téléphone (PWA, fonctionne hors ligne une fois ouverte).
 

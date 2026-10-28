@@ -8,12 +8,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Silksong 100 %">
+<meta name="apple-mobile-web-app-title" content="Silksong">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/hornet-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/hornet-180.png">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Silksong 100 %</title>
+<title>Silksong : mes objectifs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
@@ -58,8 +58,6 @@ a { color: var(--accent); }
 .top { position: sticky; top: 0; padding-top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
 .top .wrap { padding-block: 10px 12px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
 .brand { grid-column: 1 / -1; grid-row: 1; font: 700 13px/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
-.sync { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); display: inline-block; }
-.sync[data-s="ok"] { background: var(--ok); } .sync[data-s="pending"] { background: var(--warn); } .sync[data-s="error"] { background: var(--accent); }
 .pct, .big, .pname, .cname, .sumcard h2, .card h2 { font-variant-numeric: lining-nums tabular-nums; font-feature-settings: "lnum" 1; }
 .pct { grid-column: 1; grid-row: 2; font: 700 34px/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
 .pct small { font: 700 16px var(--font-body); color: var(--muted); margin-left: 3px; }
@@ -89,16 +87,17 @@ a { color: var(--accent); }
 .hbar { height: 6px; border-radius: 6px; background: var(--surface2); overflow: hidden; margin: 0 0 10px; }
 .hbar i { display: block; height: 100%; background: var(--c); border-radius: 6px; }
 .hl { margin: 0; font-size: 14.5px; color: var(--muted); }
+.hnote { padding: 2px 4px 0; font-size: 13.5px; }
+.warnbar { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 700; }
 .hl.ok { color: var(--ok); } .hl.late { color: var(--accent); }
 .htag { display: inline-block; margin-top: 10px; padding: 3px 10px; border-radius: 999px; background: var(--surface2); color: var(--muted); font-size: 12.5px; font-weight: 700; }
 .hgo { position: absolute; right: 14px; top: 50%; margin-top: -14px; width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); }
 .hgo::before { content: ""; position: absolute; left: 9px; top: 9px; width: 8px; height: 8px; border-right: 2.5px solid var(--ink); border-top: 2.5px solid var(--ink); transform: rotate(45deg); }
 .soonbox { margin-top: 8px; padding: 14px; border-radius: 14px; background: var(--info-soft); font-size: 15px; }
-.back { appearance: none; display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 34px; padding: 4px 13px 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface2); color: var(--ink); font-weight: 700; font-size: 14.5px; letter-spacing: 0; text-transform: none; cursor: pointer; }
+.back { appearance: none; display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 44px; padding: 4px 15px 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface2); color: var(--ink); font-weight: 700; font-size: 14.5px; letter-spacing: 0; text-transform: none; cursor: pointer; }
 .back:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .home .back { margin-bottom: 18px; }
 .brand .bname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.brand .sync { margin-left: auto; }
 
 /* Assistant de la Brume */
 .mist[open] > summary { margin-bottom: 10px; }
@@ -325,7 +324,8 @@ textarea.out { width: 100%; min-height: 110px; margin-top: 8px; padding: 10px; b
   <div id="cat" hidden>
   <header class="top">
     <div class="wrap">
-      <div class="brand"><button type="button" class="back" id="menu" aria-label="Retour au menu">‹ Menu</button><span class="bname">100 % en moins de 30 h</span><span class="sync" id="sync" data-s="local" title="Sauvegarde locale seulement"></span></div>
+      <div class="brand"><button type="button" class="back" id="menu" aria-label="Retour au menu">‹ Menu</button><span class="bname">100 % en moins de 30 h</span></div>
+      <p class="warnbar" id="warn" role="alert" hidden></p>
       <div class="pct"><span id="pct">0</span><small>%</small></div>
       <div class="meta"><span id="m-steps">0/0 étapes</span></div>
       <div class="bar" role="progressbar" aria-label="Pourcentage de complétion estimé" aria-valuemin="0" aria-valuemax="100" id="pbar"><i id="pfill"></i></div>
@@ -1446,7 +1446,7 @@ const ROUTE_SPEED = `## p0 | Avant de partir | - | Route de speedrun tracée sur
 /* Récapitulatif de l'accueil : fonctions pures, sans accès à la page (testées dans tests/home.test.js). */
 var HOME = (function () {
   var LIMIT = 30 * 60;
-  function hm(min) { var h = Math.floor(min / 60), m = Math.round(min % 60); return h + ' h ' + (m < 10 ? '0' : '') + m; }
+  function hm(min) { var t = Math.round(min), h = Math.floor(t / 60), m = t % 60; return h + ' h ' + (m < 10 ? '0' : '') + m; }
   /* o : { pct, done, total, final, cps: [{ target, actual }] } en minutes ; actual vaut null tant que le temps n'est pas noté.
      Même règle que l'onglet Temps : le dernier repère noté donne le temps actuel et la fin estimée. */
   function a30(o) {
@@ -1509,7 +1509,7 @@ function pctFr(v) {
   else s = r.toFixed(2);
   return s.replace('.', ',');
 }
-function hm(min) { var h = Math.floor(min / 60), m = Math.round(min % 60); return h + ' h ' + (m < 10 ? '0' : '') + m; }
+function hm(min) { var t = Math.round(min), h = Math.floor(t / 60), m = t % 60; return h + ' h ' + (m < 10 ? '0' : '') + m; }
 function parseHM(s) {
   var m = String(s || '').trim().match(/^(\d{1,2})\s*(?:[:hH.]\s*(\d{1,2})?)?$/);
   if (!m) return null;
@@ -1549,7 +1549,16 @@ var PD = {};
 var LSR = 'silksong100.runs.v1', RUNS = [];
 var LSR30 = 'silksong100.runs30.v1', RUNS30 = [];
 function lsGet(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
-function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+var SAVE_FAIL = false;
+function lsSet(k, v) {
+  try { localStorage.setItem(k, JSON.stringify(v)); if (SAVE_FAIL) { SAVE_FAIL = false; warnSave(); } }
+  catch (e) { if (!SAVE_FAIL) { SAVE_FAIL = true; warnSave(); } }
+}
+function warnSave() {
+  var w = $('#warn'); if (!w) return;
+  w.hidden = !SAVE_FAIL;
+  w.textContent = SAVE_FAIL ? 'Cet appareil refuse d’enregistrer ta progression (mode privé ou mémoire pleine). Copie tes données dans Infos › Mes données pour ne rien perdre.' : '';
+}
 function normState(s, steps) {
   var d = {};
   steps = steps || STEPS;
@@ -1682,6 +1691,13 @@ function stepInfo(s) {
   return { tags: tags, head: rich(sp[0]), gain: gain, xtra: x ? '<div class="xtra" data-sid="' + s.id + '">' + x + '</div>' : '' };
 }
 function plain(t) { return t.replace(/\*\*/g, ''); }
+/* Début de phrase pour « Ensuite » : s'arrête à la première phrase ou au premier « : », jamais au milieu d'un nombre (1.0.30000), et coupe à un mot entier. */
+function brief(t) {
+  var s = plain(t).replace(/\s*(?::|[.!?](?=\s)).*$/, '');
+  if (s.length <= 90) return s;
+  s = s.slice(0, 90); var i = s.lastIndexOf(' ');
+  return (i > 40 ? s.slice(0, i) : s) + '…';
+}
 function stepHTML(s, n) {
   var f = stepInfo(s), id = s.id;
   var h = '<li class="step" id="s-' + id + '" data-id="' + id + '"><div class="row">' +
@@ -1833,7 +1849,7 @@ function refreshNow() {
   if (idx > 0 && S.d[ORDER[idx - 1]]) h += '<button type="button" class="sbtn" data-now="back">Annuler la précédente</button>';
   h += '<button type="button" class="sbtn" data-now="list">Voir dans la route</button></div>';
   if (f.xtra) h += '<div class="nowmore"' + (now.open || UI.det ? '' : ' hidden') + '>' + f.xtra + '</div>';
-  if (later.length) h += '<div class="nowlater"><b>Ensuite</b>' + later.map(function (x) { return '<span>' + esc(plain(x.text).replace(/\s*[:.].*$/, '').slice(0, 90)) + '</span>'; }).join('') + '</div>';
+  if (later.length) h += '<div class="nowlater"><b>Ensuite</b>' + later.map(function (x) { return '<span>' + esc(brief(x.text)) + '</span>'; }).join('') + '</div>';
   box.className = 'now'; box.innerHTML = h;
 }
 /* ---------- Zones repliables ---------- */
@@ -1904,7 +1920,7 @@ function buildTime() {
       '<span class="tsub">' + (CUR === 'speed' ? 'Repère ' : 'Limite ') + hm(parseHM(p.target)) + ' <span class="delta" data-d="' + p.id + '"></span><span class="delta" data-rd="' + p.id + '"></span></span></div>');
   });
   h.push('</div>');
-  $('#tab-time').innerHTML = (CUR === 'a30' ? runs30Card() : '') + h.join('');
+  $('#tab-time').innerHTML = h.join('') + (CUR === 'a30' ? runs30Card() : '');
   timeSync();
   $$('.trow').forEach(function (row) {
     var t = parseHM(tval(row.querySelector('.th').getAttribute('data-ph')));
@@ -1945,13 +1961,13 @@ function buildInfoA30() {
     '<li>L’onglet <b>100 %</b> liste les 124 éléments qui comptent, avec leur nom anglais et leur emplacement. Cocher un élément coche l’étape correspondante.</li>' +
     '<li>Dans la liste, touche la case pour cocher, ou le texte d’une étape pour voir ses détails et ses images (touche une image pour l’agrandir). Chaque zone a un bloc « Trajet et carte de la zone ».</li>' +
     '<li>Les puces et les Médaillons de souvenir n’ajoutent aucun % mais sont obligatoires (Œuf de Pucelia, Sylphonie).</li>' +
-    '<li>Ta progression est enregistrée sur cet appareil, et sur ton compte quand c’est possible (pastille verte en haut), donc retrouvable sur iPhone et sur Mac.</li></ul></div>' +
+    '<li>Ta progression est enregistrée <b>sur cet appareil seulement</b>, il n’y a pas de compte. Pour la garder en sécurité ou la passer sur un autre appareil, utilise « Copier mes données » (en bas de cet onglet) de temps en temps.</li></ul></div>' +
     '<div class="card"><h2>Barème du 100 %</h2><div class="tbl"><table><thead><tr><th>Catégorie</th><th class="n">Nb</th><th class="n">Unité</th><th class="n">Total</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '<p style="font-size:14px;color:var(--muted)">Les boss, le Journal du Chasseur complet, les souhaits sans objet de la liste et les autres succès ne comptent pas. La Cape flottante et la Cape de plumes sont indispensables mais ne rapportent rien.</p></div>' +
     '<div class="card"><h2>Règles à ne pas rater</h2><ul>' +
     '<li><b>100 % avant Lace Déchue.</b> Achèvement et Achèvement rapide ne se donnent qu’en terminant le jeu avec 100 % affiché. Le dernier 1 % est la Flore éternelle, juste avant le plongeon final.</li>' +
     '<li><b>Achèvement rapide</b> : 100 % en moins de 30 h de temps de jeu.</li>' +
-    '<li><b>Avant l’Acte 3</b> : Frères Précurseurs Signis &amp; Gron (Quais Profonds), Quatrième Chorale, Veuve, toutes les quêtes prérequises de <i>Soie et âme</i>, les 18 Médaillons, les mélodies. Plusieurs ennemis et boss se corrompent ensuite.</li>' +
+    '<li><b>Avant l’Acte 3</b> : Frères Précurseurs Signis &amp; Gron (Quais Profonds), Quatrième Chorale, Veuve, toutes les quêtes prérequises de <i>Soie et âme</i>, les Médaillons nécessaires à la Sylphonie (18, ou 15 si aucun n’est dépensé sur l’Emblème Chasseur), les mélodies. Plusieurs ennemis et boss se corrompent ensuite.</li>' +
     '<li><b>Argent</b> : prévois environ 4 570 Perles pour l’Architecte et Grindle, et garde des Métaux artisanaux (8 achats en demandent 1 chacun).</li>' +
     '<li><b>Clés simples</b> : deux suffisent. Une achetée à Pebb pour la porte de Vermiterres, une gagnée au Chemin du Pécheur pour le Chapelier. Les Quais Profonds n’en demandent pas dans cette route.</li></ul></div>' +
     '<div class="card"><h2>Points à confirmer en jeu</h2><ul>' +
@@ -1959,8 +1975,8 @@ function buildInfoA30() {
     '<li>Puce n°8 (Vermiterres), n°14 (Marches Érodées) et n°24 (Le Bloc) : le guide et le wiki se contredisent légèrement sur l’emplacement exact ; les deux versions sont indiquées.</li>' +
     '<li>Pucéclair/Pucerouette/Puceballe : l’ordre des mini-jeux est celui du guide source.</li>' +
     '<li>« Acheter la clé de l’architecte demande 25 outils » vient d’une seule source.</li></ul></div>' +
-    '<div class="card"><h2>Corrections de la réponse précédente</h2><p>Plusieurs noms donnés plus haut dans la conversation étaient des traductions littérales. Les noms de ce guide sont ceux du wiki francophone du jeu.</p>' +
-    '<div class="tbl"><table><thead><tr><th>Avant (faux)</th><th>Maintenant</th><th>Anglais</th></tr></thead><tbody>' + fix + '</tbody></table></div>' +
+    '<div class="card"><h2>Noms français</h2><p>Les noms de ce guide sont ceux du wiki francophone du jeu. Si tu croises ailleurs une traduction littérale (colonne de gauche), voici le nom à chercher en jeu.</p>' +
+    '<div class="tbl"><table><thead><tr><th>Traduction littérale</th><th>Nom du jeu</th><th>Anglais</th></tr></thead><tbody>' + fix + '</tbody></table></div>' +
     '<p style="font-size:14px;color:var(--muted)">Précisions : les Fins « Reine tisserande » et « Enfant tourmenté » ne comptent pas pour le 100 % et sont ignorées ici. L’Emblème Sorcière demande en revanche d’être infecté puis soigné (Rite de réincarnation, Chirurgie parasitaire).</p></div>' +
     '<div class="card"><h2>Sources</h2><ul>' + links + '</ul><p style="font-size:14px;color:var(--muted)">Images : captures et tracés du guide Steam de <b>vivictor</b> (certains tracés par <b>TubbinSauce</b>), reprises ici pour ton usage personnel. Les noms visibles sur les images sont en anglais : le guide les donne en français dans le texte.</p></div>' +
     dataCard();
@@ -1975,7 +1991,7 @@ function dataCard() {
     '<div class="row-actions"><button class="chip" id="wake" type="button" aria-pressed="false">Garder l’écran allumé</button>' +
     '<button class="chip" id="export" type="button">Copier mes données</button><button class="chip" id="import" type="button">Importer des données</button><button class="chip" id="reset" type="button">Tout effacer (cases et temps)</button></div>' +
     '<textarea class="out" id="outbox" readonly hidden aria-label="Données exportées"></textarea>' +
-    '<div id="inwrap" hidden><p style="color:var(--muted);font-size:14px;margin:10px 0 4px">Colle ici le texte copié avec « Copier mes données » depuis l’autre version de l’appli. Il remplace tes cases et tes temps actuels.</p>' +
+    '<div id="inwrap" hidden><p style="color:var(--muted);font-size:14px;margin:10px 0 4px">Colle ici le texte copié avec « Copier mes données » depuis l’autre version de l’appli. Il remplace tes cases, tes temps et tes runs actuels : l’appli te demande de confirmer.</p>' +
     '<textarea class="out" id="inbox" aria-label="Données à importer" placeholder="{&quot;d&quot;:[…],&quot;t&quot;:{…}}"></textarea>' +
     '<div class="row-actions"><button class="chip" id="indo" type="button">Importer maintenant</button></div><p id="inmsg" style="font-size:14px;margin:6px 0 0"></p></div></div>';
 }
@@ -2276,25 +2292,52 @@ function importProfile(key, dd, tt) {
   return { n: n, tn: tn };
 }
 function exportAll() { var o = serialOf('a30'); o.sp = serialOf('speed'); o.runs = RUNS; o.runs30 = RUNS30; return o; }
+/* Combien d'étapes et de temps un texte importé contient réellement (rien n'est appliqué ici). */
+function countProfile(key, dd, tt) {
+  var D = PD[key], n = 0, tn = 0, ids = Array.isArray(dd) ? dd : (dd && typeof dd === 'object' ? Object.keys(dd) : []);
+  ids.forEach(function (id) { if (D.steps[id]) n++; });
+  if (tt && typeof tt === 'object') Object.keys(tt).forEach(function (k) { if (/^p\d+$/.test(k) && parseHM(tt[k]) != null) tn++; });
+  return { n: n, tn: tn };
+}
+function plu(n, w) { return n + ' ' + w + (n > 1 ? 's' : ''); }
+function stOf(key) { return key === CUR ? S : PD[key].S; }
 function importData() {
-  var msg = $('#inmsg'), raw = $('#inbox').value.trim(), o;
-  function fail(t) { msg.textContent = t; msg.style.color = 'var(--accent)'; }
+  var b = $('#indo'), msg = $('#inmsg'), raw = $('#inbox').value.trim(), o;
+  function say(t, c) { msg.textContent = t; msg.style.color = c; }
+  function disarm() { clearTimeout(b._t); b.removeAttribute('data-arm'); b.textContent = 'Importer maintenant'; }
+  function fail(t) { disarm(); say(t, 'var(--accent)'); }
   if (!raw) return fail('Colle d’abord le texte copié.');
   try { o = JSON.parse(raw); } catch (e) { return fail('Ce texte n’est pas valide : copie-le de nouveau en entier.'); }
-  var hasA = !!o && (Array.isArray(o.d) || (!!o.d && typeof o.d === 'object')), hasS = !!o && !!o.sp && typeof o.sp === 'object', hasR = !!o && Array.isArray(o.runs), hasR30 = !!o && Array.isArray(o.runs30);
-  if (!hasA && !hasS && !hasR && !hasR30) return fail('Ce texte ne contient pas de progression.');
-  var r = { a: { n: 0, tn: 0 }, s: { n: 0, tn: 0 }, runs: 0 };
-  if (hasA) r.a = importProfile('a30', o.d, o.t);
-  if (hasS) r.s = importProfile('speed', o.sp.d, o.sp.t);
-  if (hasR) { RUNS = normRuns(o.runs); saveRuns(); r.runs = RUNS.length; }
-  if (hasR30) { RUNS30 = normRuns(o.runs30); saveRuns30(); }
+  if (!o || typeof o !== 'object') return fail('Ce texte ne contient pas de progression.');
+  /* On n'applique que ce qui contient du réel : une partie vide ou illisible ne doit jamais effacer ta progression. */
+  var pa = countProfile('a30', o.d, o.t), ps = o.sp && typeof o.sp === 'object' ? countProfile('speed', o.sp.d, o.sp.t) : { n: 0, tn: 0 };
+  var useA = pa.n + pa.tn > 0, useS = ps.n + ps.tn > 0;
+  var rs = Array.isArray(o.runs) ? normRuns(o.runs) : [], r30 = Array.isArray(o.runs30) ? normRuns(o.runs30) : [];
+  if (!useA && !useS && !rs.length && !r30.length) return fail('Rien de reconnu dans ce texte (ni étape, ni temps, ni run) : rien n’a été importé.');
+  var repl = [], na = Object.keys(stOf('a30').d).length, ns = Object.keys(stOf('speed').d).length;
+  if (useA && na) repl.push(plu(na, 'étape') + ' du 100 %');
+  if (useS && ns) repl.push(plu(ns, 'étape') + ' du speedrun');
+  if (rs.length && RUNS.length) repl.push(plu(RUNS.length, 'run') + ' de speedrun');
+  if (r30.length && RUNS30.length) repl.push(plu(RUNS30.length, 'run') + ' du 100 %');
+  if (repl.length && !(b.getAttribute('data-arm') === '1' && b._raw === raw)) {
+    b.setAttribute('data-arm', '1'); b._raw = raw; b.textContent = 'Confirmer : remplacer';
+    say('Cet import remplace ce que tu as déjà (' + repl.join(', ') + '). Touche encore pour confirmer.', 'var(--accent)');
+    clearTimeout(b._t); b._t = setTimeout(function () { disarm(); say('', ''); }, 8000);
+    return;
+  }
+  disarm();
+  var r = { a: { n: 0, tn: 0 }, s: { n: 0, tn: 0 } };
+  if (useA) r.a = importProfile('a30', o.d, o.t);
+  if (useS) r.s = importProfile('speed', o.sp.d, o.sp.t);
+  if (rs.length) { RUNS = rs; saveRuns(); }
+  if (r30.length) { RUNS30 = r30; saveRuns30(); }
   lastGK = null; now.id = null; buildTime(); buildRuns(); refreshAll(); autoGroups(true);
   var parts = [];
-  if (hasA) parts.push(r.a.n + ' étapes du 100 % et ' + r.a.tn + ' temps');
-  if (hasS) parts.push(r.s.n + ' étapes du speedrun et ' + r.s.tn + ' repères');
-  if (hasR) parts.push(r.runs + (r.runs > 1 ? ' runs de speedrun' : ' run de speedrun'));
-  if (hasR30) parts.push(RUNS30.length + (RUNS30.length > 1 ? ' runs du 100 %' : ' run du 100 %'));
-  msg.style.color = 'var(--ok)'; msg.textContent = 'Importé : ' + parts.join(', ') + '.'; $('#inbox').value = '';
+  if (useA) parts.push(plu(r.a.n, 'étape') + ' du 100 % et ' + r.a.tn + ' temps');
+  if (useS) parts.push(plu(r.s.n, 'étape') + ' du speedrun et ' + plu(r.s.tn, 'repère'));
+  if (rs.length) parts.push(plu(rs.length, 'run') + ' de speedrun');
+  if (r30.length) parts.push(plu(r30.length, 'run') + ' du 100 %');
+  say('Importé : ' + parts.join(', ') + '.', 'var(--ok)'); $('#inbox').value = '';
 }
 function resetClick(b) {
   var kind = b.getAttribute('data-reset'), ph = b.getAttribute('data-ph'), base = b.getAttribute('data-label') || b.textContent;
@@ -2402,7 +2445,7 @@ function bind() {
     if (b.id === 'indo') { importData(); return; }
     if (b.id === 'export') {
       var txt = JSON.stringify(exportAll()), box = $('#outbox');
-      box.value = txt; box.hidden = false; box.focus(); box.select();
+      box.value = txt; box.hidden = false; box.focus(); box.select(); UI.bk = Date.now(); saveUI();
       try { navigator.clipboard.writeText(txt).then(function () { b.textContent = 'Copié'; }, function () {}); } catch (err) {}
     }
     if (b.id === 'reset') {
@@ -2535,6 +2578,12 @@ function buildHome() {
     ? homeCard('speed', PROF.speed.name, '<p class="hl">Aucune run enregistrée</p>')
     : homeCard('speed', PROF.speed.name, '<p class="hcn"><b class="t">' + esc(fmtDur(sp.last)) + '</b></p><p class="hl">Dernière run' + (sp.lastDate ? ' · ' + esc(fmtDate(sp.lastDate)) : '') + '</p>');
   h += homeCard('steel', SOON.steel[0], '<p class="hl">' + esc(SOON.steel[1]) + '</p><span class="htag">En préparation</span>');
+  var any = Object.keys(stOf('a30').d).length + Object.keys(stOf('speed').d).length + RUNS.length + RUNS30.length;
+  if (any) {
+    var days = UI.bk ? Math.floor((Date.now() - UI.bk) / 86400000) : null;
+    if (days == null) h += '<p class="hl hnote">Tout est gardé sur ce téléphone seulement. Pense à « Copier mes données » (Infos › Mes données) de temps en temps : c’est ta seule sauvegarde.</p>';
+    else if (days >= 14) h += '<p class="hl hnote">Dernière copie de tes données il y a ' + days + ' jours (Infos › Mes données).</p>';
+  }
   $('#hcards').innerHTML = h;
 }
 var VIEW = 'home';
@@ -2545,7 +2594,7 @@ function showView(v, key) {
   else if (v === 'soon') { $('#soon-t').textContent = SOON[key][0]; $('#soon-s').textContent = SOON[key][1]; }
   else {
     if (key && key !== CUR) useProfile(key); else { now.id = null; refreshAll(); }
-    showTab(UI.tab || 'route');
+    showTab('route');
   }
   window.scrollTo(0, 0);
 }

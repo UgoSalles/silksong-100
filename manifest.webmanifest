@@ -1,7 +1,7 @@
 {
-  "name": "Silksong 100 %",
-  "short_name": "Silksong 100",
-  "description": "Route 100 % de Hollow Knight: Silksong en moins de 30 h, à cocher pas à pas.",
+  "name": "Silksong : mes objectifs",
+  "short_name": "Silksong",
+  "description": "Mes objectifs Hollow Knight: Silksong : 100 % en moins de 30 h et speedrun en moins de 5 h, à cocher pas à pas.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
