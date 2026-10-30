@@ -73,7 +73,7 @@ a { color: var(--accent); }
 .hzh { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 22px 0 4px; padding-bottom: 6px; border-bottom: 2px solid var(--line); font: 700 19px/1.25 var(--font-display); }
 .hzh span { font: 700 14px var(--font-body); color: var(--muted); font-variant-numeric: tabular-nums; }
 .hl-list { list-style: none; margin: 0; padding: 0; }
-.hrow { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 0 4px; min-height: 52px; padding: 4px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.hrow { display: grid; grid-template-columns: 44px 48px minmax(0, 1fr) auto; align-items: center; gap: 0 6px; min-height: 60px; padding: 4px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
 .hrow .box { margin-left: 4px; }
 .hrow.done .hn b { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1.5px; }
 .hn { min-width: 0; overflow-wrap: anywhere; }
@@ -82,7 +82,8 @@ a { color: var(--accent); }
 .hq { font: 700 15px var(--font-body); font-variant-numeric: tabular-nums; color: var(--ink); padding-left: 8px; text-align: right; }
 .hq small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
 .hbadge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--yel-soft); color: var(--yel); font-size: 12px; font-weight: 700; vertical-align: 2px; white-space: nowrap; }
-.hbadge.ac { background: var(--blue-soft); color: var(--blue); }
+.hi { width: 44px; height: 50px; object-fit: contain; justify-self: center; }
+.hrow.done .hi { opacity: .45; }
 
 /* Accueil */
 .home { padding-block: calc(env(safe-area-inset-top, 0px) + 20px) calc(env(safe-area-inset-bottom, 0px) + 28px); min-height: 100vh; }
@@ -2090,7 +2091,7 @@ if (typeof module !== 'undefined') module.exports = HOME;
 <script>
 /* Véritable chasseur : fonctions pures (testées dans tests/hunter.test.js), sans accès à la page. */
 var HUNTER = (function () {
-  /* « ## Zone » puis « nom | kills | statut | note » (voir l'en-tête de hunter.txt). statut : '' (obligatoire), 'facultatif', 'acier'. */
+  /* « ## Zone » puis « nom | kills | statut | note | image » (voir l'en-tête de hunter.txt). statut : '' (obligatoire) ou 'facultatif'. */
   function parse(src) {
     var zones = [], cur = null;
     String(src).split('\n').forEach(function (raw) {
@@ -2099,11 +2100,11 @@ var HUNTER = (function () {
       if (line.slice(0, 3) === '## ') { cur = { name: line.slice(3).trim(), items: [] }; zones.push(cur); return; }
       if (!cur) throw new Error('Entrée avant la première zone : ' + line);
       var p = line.split('|').map(function (s) { return s.trim(); }), tab = p[1] === 'tablette';
-      cur.items.push({ id: p[0], name: p[0], kills: tab ? 0 : +p[1], tablet: tab, status: p[2] || '', note: p[3] || '' });
+      cur.items.push({ id: p[0], name: p[0], kills: tab ? 0 : +p[1], tablet: tab, status: p[2] || '', note: p[3] || '', img: p[4] || '' });
     });
     return zones;
   }
-  /* d : { nom: 1 }. La barre ne compte que les obligatoires ; les facultatifs ont leur compteur, l'entrée « acier » n'est comptée nulle part. */
+  /* d : { nom: 1 }. La barre ne compte que les obligatoires ; les facultatifs ont leur compteur. */
   function stats(zones, d) {
     var s = { done: 0, total: 0, optDone: 0, optTotal: 0, pct: 0, zones: [] };
     zones.forEach(function (z) {
@@ -2132,275 +2133,275 @@ if (typeof module !== 'undefined') module.exports = HUNTER;
 
 const HUNTER_SRC = `# Véritable chasseur : entrées du Journal du Chasseur (succès True Hunter / Véritable chasseur).
 # Sources : hollowknight.wiki (Hunter's Journal (Silksong), colonne « Number of kills required », sections Location de chaque ennemi) et fr.hollowknight.wiki (Ennemis (Silksong) pour les noms français).
-# Format : une zone par ligne « ## Zone », puis « nom | kills | statut | note ». statut : vide (obligatoire), facultatif (hors succès), acier (Âme d’acier seulement). kills = nombre, ou « tablette ».
+# Format : une zone par ligne « ## Zone », puis « nom | kills | statut | note | image ». statut : vide (obligatoire) ou facultatif (hors succès). kills = nombre, ou « tablette ». image = nom du fichier pwa/hj/<image>.png (build/fetch_monsters.py).
+# L’entrée Salvation Invoquée (Âme d’acier seulement, hors succès) n’est volontairement pas dans la liste.
 # Chaque ennemi est rangé dans UNE seule zone (celle où le wiki le place en premier, corrigée à la main) ; l’ordre dans une zone est celui du Journal.
 # Ne pas insérer de ligne au milieu sans raison : l’id de case est le nom français (stable).
 ## Grotte Verdoyante
-Ver Verdoyant | 25
-Ver Verdoyant Colossal | 3
-Moucheton Verdoyant | 20
-Mère Forestière | 3
-Carapton | 30
-Mawrok | 8
-Pèlerin Bondisseur | 35 |  | Battre Pebb compte pour cette entrée.
-Pèlerin Moussu | 20
+Ver Verdoyant | 25 |  |  | mossgrub
+Ver Verdoyant Colossal | 3 |  |  | massive-mossgrub
+Moucheton Verdoyant | 20 |  |  | mossmir
+Mère Forestière | 3 |  |  | moss-mother
+Carapton | 30 |  |  | mawling
+Mawrok | 8 |  |  | marrowmaw
+Pèlerin Bondisseur | 35 |  | Battre Pebb compte pour cette entrée. | pilgrim-pouncer
+Pèlerin Moussu | 20 |  |  | overgrown-pilgrim
 ## Gouffre d’Os
-Aknide | 15
-Pèlerin Suppliant | 35
-Pèlerin Ancien | 5
-Salvation Invoquée | 1 | acier | Requise pour le Souvenir du Chasseur dans ce mode seulement.
+Aknide | 15 |  |  | aknid
+Pèlerin Suppliant | 35 |  |  | pilgrim-groveller
+Pèlerin Ancien | 5 |  |  | elder-pilgrim
 ## L’Antre
-Petit Cornusque | 35
-Aile-d’os | 15
-Gros Cornusque | 15
-Crâne-Tyran | 1
-Kilik | 25
-Volpeste | 30
-Caranide | 25
-Scaralex | 3 | facultatif
-Bête des Cloches | 1
-Pèlerin Ailé | 25
+Petit Cornusque | 35 |  |  | skull-scuttler
+Aile-d’os | 15 |  |  | skullwing
+Gros Cornusque | 15 |  |  | skull-brute
+Crâne-Tyran | 1 |  |  | skull-tyrant
+Kilik | 25 |  |  | kilik
+Volpeste | 30 |  |  | beastfly
+Caranide | 25 |  |  | caranid
+Scaralex | 3 | facultatif |  | flintbeetle
+Bête des Cloches | 1 |  |  | bell-beast
+Pèlerin Ailé | 25 |  |  | winged-pilgrim
 ## Quais Profonds
-Hoppemort | 20
-Lavaluge | 12
-Laveluge | 8
-Fourrecreux | 25
-Volsilex | 25
-Silex Ardent Ailé | 10
-Orpailleur de Pierre Fumante | 10
-Clochelier | 5
-Frères Précurseurs Signis & Gron | 1
-Fossillard | 3
-Lace | 12 |  | Si le combat de Lace aux Quais Profonds a été sauté, l’entrée se débloque en la battant une seule fois au Berceau.
+Hoppemort | 20 |  |  | hardbone-hopper
+Lavaluge | 12 |  |  | lavalug
+Laveluge | 8 |  |  | lavalarga
+Fourrecreux | 25 |  |  | smelt-shoveller
+Volsilex | 25 |  |  | flintstone-flyer
+Silex Ardent Ailé | 10 |  |  | flintflame-flyer
+Orpailleur de Pierre Fumante | 10 |  |  | smokerock-sifter
+Clochelier | 5 |  |  | deep-diver
+Frères Précurseurs Signis & Gron | 1 |  |  | forebrothers-signis-gron
+Fossillard | 3 |  |  | shardillard
+Lace | 12 |  | Si le combat de Lace aux Quais Profonds a été sauté, l’entrée se débloque en la battant une seule fois au Berceau. | lace
 ## Terres Lointaines
-Caranide Féroce | 15
-Hoppemort Ancien | 10
-Tarmite | 10
-Hokeur | 15
-Groncéros | 2
-Pèlerin Cornellule | 15
-Gros Pèlerin | 10 |  | Battre le Pèlerin Fatigué compte pour cette entrée.
-Zéphyrin | 15
-Folfeuille | 25
-Folfeuille Ailé | 20
-Quatrième Chorale | 1 |  | Peut aussi se compléter en entrant dans l’Acte 3.
-Gurr le Banni | 1
-Griffe-lame Ultime | 6 |  | Peut aussi se compléter en battant Karmelita.
-Chanteuse Skarr Karmelita | 1
+Caranide Féroce | 15 |  |  | vicious-caranid
+Hoppemort Ancien | 10 |  |  | hardbone-elder
+Tarmite | 10 |  |  | tarmite
+Hokeur | 15 |  |  | hoker
+Groncéros | 2 |  |  | rhinogrund
+Pèlerin Cornellule | 15 |  |  | pilgrim-hornfly
+Gros Pèlerin | 10 |  | Battre le Pèlerin Fatigué compte pour cette entrée. | pilgrim-hulk
+Zéphyrin | 15 |  |  | brushflit
+Folfeuille | 25 |  |  | fertid
+Folfeuille Ailé | 20 |  |  | flapping-fertid
+Quatrième Chorale | 1 |  | Peut aussi se compléter en entrant dans l’Acte 3. | fourth-chorus
+Gurr le Banni | 1 |  |  | gurr-the-outcast
+Griffe-lame Ultime | 6 |  | Peut aussi se compléter en battant Karmelita. | last-claw
+Chanteuse Skarr Karmelita | 1 |  |  | skarrsinger-karmelita
 ## Sentier du Chasseur
-Volpeste Enragée | 2
-Skarranard | 25
-Skarravole | 30
-Skarralleur | 20 |  | Peut aussi se compléter en battant Karmelita.
-Skarreux | 15 |  | Peut aussi se compléter en battant Karmelita.
-Skarralance | 10 |  | Peut aussi se compléter en battant Karmelita.
-Skarragarde | 2
+Volpeste Enragée | 2 |  |  | savage-beastfly
+Skarranard | 25 |  |  | skarrlid
+Skarravole | 30 |  |  | skarrwing
+Skarralleur | 20 |  | Peut aussi se compléter en battant Karmelita. | skarr-scout
+Skarreux | 15 |  | Peut aussi se compléter en battant Karmelita. | skarr-stalker
+Skarralance | 10 |  | Peut aussi se compléter en battant Karmelita. | spear-skarr
+Skarragarde | 2 |  |  | skarrgard
 ## Sombrevale
-Pèlerin Porte-cloche | 10
-Guide des Pèlerins | 15
-Mite | 30
-Mite Ailée | 25
-Mite Nourricière | 10
-Collecteur de Résidus | 20
-Coupe-soie | 25
-Démêleur de soie | 15
-Ailebrume | 1
-Feu Follet | 15 |  | Peut aussi se compléter en battant le Père de la Flamme.
-Insecte Ardent | 8 |  | Peut aussi se compléter en battant le Père de la Flamme.
-Père de la Flamme | 1
-Corbotère | 25
-Grand Corbotère | 20
-Corbotère Robuste | 15
-Juré Corbotère | 15 |  | Peut aussi se compléter en battant Corbotère.
-Grand Juré Corbotère | 10 |  | Peut aussi se compléter en battant Corbotère.
-Juré Corbotère Trapu | 8 |  | Peut aussi se compléter en battant Corbotère.
-Père Corbotère | 1
-Shakra | 1 | facultatif
-Garmond & Zaza | 1 | facultatif
+Pèlerin Porte-cloche | 10 |  |  | pilgrim-bellbearer
+Guide des Pèlerins | 15 |  |  | pilgrim-guide
+Mite | 30 |  |  | mite
+Mite Ailée | 25 |  |  | fluttermite
+Mite Nourricière | 10 |  |  | mitemother
+Collecteur de Résidus | 20 |  |  | dreg-catcher
+Coupe-soie | 25 |  |  | silk-snipper
+Démêleur de soie | 15 |  |  | thread-raker
+Ailebrume | 1 |  |  | moorwing
+Feu Follet | 15 |  | Peut aussi se compléter en battant le Père de la Flamme. | wisp
+Insecte Ardent | 8 |  | Peut aussi se compléter en battant le Père de la Flamme. | burning-bug
+Père de la Flamme | 1 |  |  | father-of-the-flame
+Corbotère | 25 |  |  | craw
+Grand Corbotère | 20 |  |  | tallcraw
+Corbotère Robuste | 15 |  |  | squatcraw
+Juré Corbotère | 15 |  | Peut aussi se compléter en battant Corbotère. | craw-juror
+Grand Juré Corbotère | 10 |  | Peut aussi se compléter en battant Corbotère. | tallcraw-juror
+Juré Corbotère Trapu | 8 |  | Peut aussi se compléter en battant Corbotère. | squatcraw-juror
+Père Corbotère | 1 |  |  | crawfather
+Shakra | 1 | facultatif |  | shakra
+Garmond & Zaza | 1 | facultatif |  | garmond-zaza
 ## Coquibois
-Pèlerin Ailé Porte-cloche | 10
-Pèlerin cupide | 2
-Coquillard d’Étang | 15
-Pêcheur d’Étang | 20
-Moucheron de Coquibois | 15
-Guêpe Sylvestre | 12
-Écorceuse | 12
-Écorceuse Cornue | 10
-Écorcine | 10
-Soeur Écorceuse | 1
-Phacia | 25
-Pollenor | 10
-Gahlia | 20
-Seth Gardien du Sanctuaire | 1
-Florinelle | 1
-Veuve | 1
+Pèlerin Ailé Porte-cloche | 10 |  |  | winged-pilgrim-bellbearer
+Pèlerin cupide | 2 |  |  | covetous-pilgrim
+Coquillard d’Étang | 15 |  |  | pond-skipper
+Pêcheur d’Étang | 20 |  |  | pondcatcher
+Moucheron de Coquibois | 15 |  |  | shellwood-gnat
+Guêpe Sylvestre | 12 |  |  | wood-wasp
+Écorceuse | 12 |  |  | splinter
+Écorceuse Cornue | 10 |  |  | splinterhorn
+Écorcine | 10 |  |  | splinterbark
+Soeur Écorceuse | 1 |  |  | sister-splinter
+Phacia | 25 |  |  | phacia
+Pollenor | 10 |  |  | pollenica
+Gahlia | 20 |  |  | gahlia
+Seth Gardien du Sanctuaire | 1 |  |  | shrine-guardian-seth
+Florinelle | 1 |  |  | nyleth
+Veuve | 1 |  |  | widow
 ## Clochelle
-Pelu | 25
-Pelu Ailé | 12
+Pelu | 25 |  |  | furm
+Pelu Ailé | 12 |  |  | winged-furm
 ## Vermiterres
-Gromllin | 25
-Grom | 10
-Craggin | 3
-Craggleur | 1
-Graine de Vie Ailée | 8
-Plasmide | 15
-Plasmidas | 6
-Zango Plasmifié | 1
+Gromllin | 25 |  |  | gromling
+Grom | 10 |  |  | grom
+Craggin | 3 |  |  | cragglite
+Craggleur | 1 |  |  | craggler
+Graine de Vie Ailée | 8 |  |  | winged-lifeseed
+Plasmide | 15 |  |  | plasmid
+Plasmidas | 6 |  |  | plasmidas
+Zango Plasmifié | 1 |  |  | plasmified-zango
 ## Chemin du Pécheur
-Bouefrasse | 80
-Férochard | 20
-Férochardier | 20
-Férosseur | 20
-Férogarde | 10
-Férochef | 10 |  | Peut aussi se compléter en battant Lugoli, Chef Déshonoré.
-Chef Déshonoré Lugoli | 1
-Spectre | 10 |  | Peut aussi se compléter en battant le Fantôme.
+Bouefrasse | 80 |  |  | muckmaggot
+Férochard | 20 |  |  | muckroach
+Férochardier | 20 |  |  | roachcatcher
+Férosseur | 20 |  |  | roachfeeder
+Férogarde | 10 |  |  | roachkeeper
+Férochef | 10 |  | Peut aussi se compléter en battant Lugoli, Chef Déshonoré. | roachserver
+Chef Déshonoré Lugoli | 1 |  |  | disgraced-chef-lugoli
+Spectre | 10 |  | Peut aussi se compléter en battant le Fantôme. | wraith
 ## Bilesac
-Mouchardon | 4
-Férovore | 12
-Férochard Boursouflé | 12
-Chrysaline Lagnia | 25
-Miremitte | 20
-Squitard des Marais | 30
-Forrénin | 15
-Trappeur Forrénin | 12
-Groal le Grand | 1
-Fantôme | 1
+Mouchardon | 4 |  |  | snitchfly
+Férovore | 12 |  |  | slubberlug
+Férochard Boursouflé | 12 |  |  | bloatroach
+Chrysaline Lagnia | 25 |  |  | mothleaf-lagnia
+Miremitte | 20 |  |  | miremite
+Squitard des Marais | 30 |  |  | swamp-squit
+Forrénin | 15 |  |  | stilkin
+Trappeur Forrénin | 12 |  |  | stilkin-trapper
+Groal le Grand | 1 |  |  | groal-the-great
+Fantôme | 1 |  |  | phantom
 ## Alcôves de la Chorale
-Émissaire | 20
-Bondisseur de la Chorale | 30
-Rinocorne de la Chorale | 15
-Porte-cloche de la Chorale | 25
-Volant de la Chorale | 20
-Ancien de la Chorale | 6
-Choristair | 25
-Reed | 30
-Grand Reed | 12
-Serrevaine | 10 |  | Peut aussi se compléter en détruisant la source des Clawmaidens aux Grandes Galeries, ou en entrant dans l’Acte 3.
-Ouvrier Mécanique | 15
+Émissaire | 20 |  |  | envoy
+Bondisseur de la Chorale | 30 |  |  | choir-pouncer
+Rinocorne de la Chorale | 15 |  |  | choir-hornhead
+Porte-cloche de la Chorale | 25 |  |  | choir-bellbearer
+Volant de la Chorale | 20 |  |  | choir-flyer
+Ancien de la Chorale | 6 |  |  | choir-elder
+Choristair | 25 |  |  | choristor
+Reed | 30 |  |  | reed
+Grand Reed | 12 |  |  | grand-reed
+Serrevaine | 10 |  | Peut aussi se compléter en détruisant la source des Clawmaidens aux Grandes Galeries, ou en entrant dans l’Acte 3. | clawmaiden
+Ouvrier Mécanique | 15 |  |  | cogworker
 ## Noyau Mécanique
-Rampant Mécanique | 15
-Engréchine | 10
-Créature Mécanique de la Chorale | 20
-Nettoyeur Mécanique | 12
-Gardien Mécanique | 8
-Sonneur Mécanique | 1
-Duo-Mécanique | 1
+Rampant Mécanique | 15 |  |  | cogwork-crawler
+Engréchine | 10 |  |  | cogwork-spine
+Créature Mécanique de la Chorale | 20 |  |  | cogwork-choirbug
+Nettoyeur Mécanique | 12 |  |  | cogwork-cleanser
+Gardien Mécanique | 8 |  |  | cogwork-defender
+Sonneur Mécanique | 1 |  |  | cogwork-clapper
+Duo-Mécanique | 1 |  |  | cogwork-dancers
 ## Voûtes des Murmures
-Fouisse-sombre | 10
-Enfant des Voûtes | 20
-Porte-lumière | 20
-Tisseur de Savoir | 15
-Archiviste | 10
-Trobbio | 1
-Trobbio Tourmenté | 1
+Fouisse-sombre | 10 |  |  | pharlid-diver
+Enfant des Voûtes | 20 |  |  | vaultborn
+Porte-lumière | 20 |  |  | lampbearer
+Tisseur de Savoir | 15 |  |  | scrollreader
+Archiviste | 10 |  |  | vaultkeeper
+Trobbio | 1 |  |  | trobbio
+Trobbio Tourmenté | 1 |  |  | tormented-trobbio
 ## Fonderie
-Voletissier | 30
-Tissomite | 20
-Sous-ouvrier | 15
-Sous-brosseur | 20
-Sous-frotteur | 10
-Sous-piqueur | 25
-Sous-loftin | 25
-Sous-trenier | 4
-Sous-mouche Mécanique | 25
-Transporteur Mécanique | 12
+Voletissier | 30 |  |  | drapefly
+Tissomite | 20 |  |  | drapemite
+Sous-ouvrier | 15 |  |  | underworker
+Sous-brosseur | 20 |  |  | underscrub
+Sous-frotteur | 10 |  |  | undersweep
+Sous-piqueur | 25 |  |  | underpoke
+Sous-loftin | 25 |  |  | underloft
+Sous-trenier | 4 |  |  | undercrank
+Sous-mouche Mécanique | 25 |  |  | cogwork-underfly
+Transporteur Mécanique | 12 |  |  | cogwork-hauler
 ## Grandes Galeries
-Sonneur de la Chorale | 3
-Prêtre | 15
-Maestro | 6
-Seconde Sentinelle | 1
+Sonneur de la Chorale | 3 |  |  | choir-clapper
+Prêtre | 15 |  |  | minister
+Maestro | 6 |  |  | maestro
+Seconde Sentinelle | 1 |  |  | second-sentinel
 ## Aile Blanche
-Tissomite Colossal | 6
-Carapace de Résidus | 8 |  | Peut aussi se compléter en battant Les Tissés.
-Soissile | 8 |  | Peut aussi se compléter en battant Les Tissés.
-Chirurgien | 3
-Morticien | 10
-Les Tissés | 1
+Tissomite Colossal | 6 |  |  | giant-drapemite
+Carapace de Résidus | 8 |  | Peut aussi se compléter en battant Les Tissés. | dreg-husk
+Soissile | 8 |  | Peut aussi se compléter en battant Les Tissés. | dregwheel
+Chirurgien | 3 |  |  | surgeon
+Morticien | 10 |  |  | mortician
+Les Tissés | 1 |  |  | the-unravelled
 ## Mémorium
-Seigneur Voletissier | 4
-Mémoria | 2
-Puce Colossal | 1
+Seigneur Voletissier | 4 |  |  | drapelord
+Mémoria | 2 |  |  | memoria
+Puce Colossal | 1 |  |  | huge-flea
 ## Conduits Putrides
-Squitard | 20
-Barnak | 8
-Siphonneur | 6
+Squitard | 20 |  |  | spit-squit
+Barnak | 8 |  |  | barnak
+Siphonneur | 6 |  |  | ductsucker
 ## Le Bloc
-Pénitent | 8
-Pénitent Chétif | 6
-Mouchetin | 20 |  | Peut aussi se compléter en battant la Mère Nourricière.
-Scabiole | 15
-Garde-mouche | 10
-Mouche Carcérale | 8
-Mère Nourricière | 1
-Péché Originel | 1
+Pénitent | 8 |  |  | penitent
+Pénitent Chétif | 6 |  |  | puny-penitent
+Mouchetin | 20 |  | Peut aussi se compléter en battant la Mère Nourricière. | freshfly
+Scabiole | 15 |  |  | scabfly
+Garde-mouche | 10 |  |  | guardfly
+Mouche Carcérale | 8 |  |  | wardenfly
+Mère Nourricière | 1 |  |  | broodmother
+Péché Originel | 1 |  |  | first-sinner
 ## Mont Fay
-Neigelin | 20
-Mnémonide | 10
-Mnémonorde | 3
-Serviteur Boran | 5
-Maîtresse de la Pique | 1
+Neigelin | 20 |  |  | driftlin
+Mnémonide | 10 |  |  | mnemonid
+Mnémonorde | 3 |  |  | mnemonord
+Serviteur Boran | 5 |  |  | servitor-boran
+Maîtresse de la Pique | 1 |  |  | pinstress
 ## Marches Érodées
-Pèlerin Randonneur | 10
-Fouisseuse | 20
-Fouisseur des Sables | 40
-Vermille | 4
-Juge | 15
-Dernière Juge | 1
-Drizznite | 25
-Garmond Perdu | 1 | facultatif
+Pèlerin Randonneur | 10 |  |  | pilgrim-hiker
+Fouisseuse | 20 |  |  | pharlid
+Fouisseur des Sables | 40 |  |  | sandcarver
+Vermille | 4 |  |  | squirrm
+Juge | 15 |  |  | judge
+Dernière Juge | 1 |  |  | last-judge
+Drizznite | 25 |  |  | driznit
+Garmond Perdu | 1 | facultatif |  | lost-garmond
 ## Sables Karak
-Pélu Corallien | 15
-Drizzna | 14
-Pokonabbine | 16
-Volucorne | 8
-Grandes Volucornes | 2 |  | Il faut aussi battre la Conchmouche en Furie pour compléter l’entrée.
-Corailleur | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Rocorail | 6
-Kai | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Kai Gardecorne | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Kai Épine-d’acier | 15 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Yuma | 16 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Yumama | 3 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Karaka | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Kakri | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Yago | 12 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Karak Gorr | 8 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Alita | 6 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Brute-corail Karaka | 6 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
-Roi Corail Khann | 1
-Gardien de la Frontière | 1
-Foudrelon | 1
-Garipide | 30
-Imoba | 4
+Pélu Corallien | 15 |  |  | coral-furm
+Drizzna | 14 |  |  | driznarga
+Pokonabbine | 16 |  |  | pokenabbin
+Volucorne | 8 |  |  | conchfly
+Grandes Volucornes | 2 |  | Il faut aussi battre la Conchmouche en Furie pour compléter l’entrée. | great-conchfly
+Corailleur | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | crustcrawler
+Rocorail | 6 |  |  | crustcrag
+Kai | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | kai
+Kai Gardecorne | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | spinebeak-kai
+Kai Épine-d’acier | 15 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | steelspine-kai
+Yuma | 16 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | yuma
+Yumama | 3 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | yumama
+Karaka | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | karaka
+Kakri | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | kakri
+Yago | 12 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | yago
+Karak Gorr | 8 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | karak-gor
+Alita | 6 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | alita
+Brute-corail Karaka | 6 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3. | corrcrust-karaka
+Roi Corail Khann | 1 |  |  | crust-king-khann
+Gardien de la Frontière | 1 |  |  | watcher-at-the-edge
+Foudrelon | 1 |  |  | voltvyrm
+Garipide | 30 |  |  | garpid
+Imoba | 4 |  |  | imoba
 ## Tisse-nid d’Atla
-Serviteur Ignim | 8
+Serviteur Ignim | 8 |  |  | servitor-ignim
 ## Berceau
-Mère Supérieure Soie | 1
+Mère Supérieure Soie | 1 |  |  | grand-mother-silk
 ## Abysses
-Rampant Obscure | 16
-Batailleur Obscure | 6
-Garganomble | 15
-Gargant Gloom | 4
-Tentacules du Néant | tablette |  | S’obtient en lisant une tablette dans le Tisse-nid d’Absolom (bas de l’Abysse).
-Lace Déchue | 1 | facultatif
+Rampant Obscure | 16 |  |  | shadow-creeper
+Batailleur Obscure | 6 |  |  | shadow-charger
+Garganomble | 15 |  |  | gloomsac
+Gargant Gloom | 4 |  |  | gargant-gloom
+Tentacules du Néant | tablette |  | S’obtient en lisant une tablette dans le Tisse-nid d’Absolom (bas de l’Abysse). | void-tendrils
+Lace Déchue | 1 | facultatif |  | lost-lace
 ## Tréfloria
-Glissefeuille | 12 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Virefeuille | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Pindra | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Cerf Fleur | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Voraphore | 6 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Cloverstag | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Cerf Pâle | 1 | facultatif
-Trèflellin | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Verdanir | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Éscalion | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
-Duo-Tréfleur | 1
+Glissefeuille | 12 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | leaf-glider
+Virefeuille | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | leaf-roller
+Pindra | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | pendra
+Cerf Fleur | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | pendragor
+Voraphore | 6 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | nuphar
+Cloverstag | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | cloverstag
+Cerf Pâle | 1 | facultatif |  | palestag
+Trèflellin | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | kindanir
+Verdanir | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | verdanir
+Éscalion | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur. | escalion
+Duo-Tréfleur | 1 |  |  | clover-dancers
 ## Ailleurs
-Masse du Néant | 8
-Ombrelisse | 10 |  | Peut aussi se compléter en finissant le Souvenir rouge.
-Skrill | 10
-Dévoreur de Cloche | 1
+Masse du Néant | 8 |  |  | void-mass
+Ombrelisse | 10 |  | Peut aussi se compléter en finissant le Souvenir rouge. | wingmould
+Skrill | 10 |  |  | skrill
+Dévoreur de Cloche | 1 |  |  | bell-eater
 `;
 </script>
 <script>
@@ -3732,8 +3733,9 @@ function buildHunter() {
   HZ.forEach(function (z) {
     h += '<h2 class="hzh">' + esc(z.name) + '<span class="hzc"></span></h2><ul class="hl-list">';
     z.items.forEach(function (it) {
-      var on = !!HUNT[it.id], badge = it.status === 'facultatif' ? '<span class="hbadge">Facultatif</span>' : it.status === 'acier' ? '<span class="hbadge ac">Âme d’acier seulement</span>' : '';
+      var on = !!HUNT[it.id], badge = it.status === 'facultatif' ? '<span class="hbadge">Facultatif</span>' : '';
       h += '<li><label class="hrow' + (on ? ' done' : '') + '"><span class="chk" style="width:auto;margin:0;padding:0"><input type="checkbox" class="cb" data-h="' + esc(it.id) + '"' + (on ? ' checked' : '') + '><span class="box" data-n=""></span></span>' +
+        (it.img ? '<img class="hi" src="hj/' + esc(it.img) + '.png" alt="" width="44" height="50" loading="lazy" decoding="async">' : '<span class="hi"></span>') +
         '<span class="hn"><b>' + esc(it.name) + '</b>' + badge + (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span>' +
         '<span class="hq">' + (it.tablet ? 'Tablette' : '×' + it.kills + '<small>à tuer</small>') + '</span></label></li>';
     });
