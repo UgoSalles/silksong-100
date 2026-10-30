@@ -68,6 +68,22 @@ a { color: var(--accent); }
 .btn.ghost { background: transparent; color: var(--accent); }
 .btn:focus-visible, .phead:focus-visible, .tabs button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
+/* Véritable chasseur : simple liste de monstres par zone */
+#hunter .bar > i { background: var(--ok); }
+.hzh { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 22px 0 4px; padding-bottom: 6px; border-bottom: 2px solid var(--line); font: 700 19px/1.25 var(--font-display); }
+.hzh span { font: 700 14px var(--font-body); color: var(--muted); font-variant-numeric: tabular-nums; }
+.hl-list { list-style: none; margin: 0; padding: 0; }
+.hrow { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 0 4px; min-height: 52px; padding: 4px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.hrow .box { margin-left: 4px; }
+.hrow.done .hn b { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.hn { min-width: 0; overflow-wrap: anywhere; }
+.hn b { font-size: 16px; font-weight: 600; line-height: 1.3; }
+.hn small { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--muted); }
+.hq { font: 700 15px var(--font-body); font-variant-numeric: tabular-nums; color: var(--ink); padding-left: 8px; text-align: right; }
+.hq small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
+.hbadge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--yel-soft); color: var(--yel); font-size: 12px; font-weight: 700; vertical-align: 2px; white-space: nowrap; }
+.hbadge.ac { background: var(--blue-soft); color: var(--blue); }
+
 /* Accueil */
 .home { padding-block: calc(env(safe-area-inset-top, 0px) + 20px) calc(env(safe-area-inset-bottom, 0px) + 28px); min-height: 100vh; }
 .hk { margin: 0 0 8px; font: 700 13px/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
@@ -75,7 +91,7 @@ a { color: var(--accent); }
 .hs { margin: 0 0 20px; color: var(--muted); }
 .hcards { display: grid; gap: 12px; }
 .hcard { appearance: none; text-align: left; width: 100%; position: relative; display: block; background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--c); border-radius: 16px; padding: 16px 58px 16px 16px; color: inherit; cursor: pointer; }
-.hcard[data-cat="a30"] { --c: var(--accent); } .hcard[data-cat="speed"] { --c: var(--yel); } .hcard[data-cat="steel"] { --c: var(--blue); }
+.hcard[data-cat="a30"] { --c: var(--accent); } .hcard[data-cat="speed"] { --c: var(--yel); } .hcard[data-cat="steel"] { --c: var(--blue); } .hcard[data-cat="hunter"] { --c: var(--ok); }
 .hcard:active { background: var(--surface2); }
 .hcard:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .hct { margin: 0 0 8px; font-size: 17px; font-weight: 700; line-height: 1.25; }
@@ -408,6 +424,20 @@ textarea.out { width: 100%; min-height: 110px; margin-top: 8px; padding: 10px; b
       <button type="button" role="tab" data-tab="info" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></svg>Infos</button>
     </div>
   </nav>
+  </div>
+  <div id="hunter" hidden>
+  <header class="top">
+    <div class="wrap">
+      <div class="brand"><button type="button" class="back" id="hmenu" aria-label="Retour au menu">‹ Menu</button><span class="bname">Véritable chasseur</span></div>
+      <div class="pct"><span id="hpct">0</span><small>%</small></div>
+      <div class="meta"><span id="hmeta">0/230 monstres</span></div>
+      <div class="bar" role="progressbar" aria-label="Avancement du succès Véritable chasseur" aria-valuemin="0" aria-valuemax="100" id="hbar"><i id="hfill"></i></div>
+    </div>
+  </header>
+  <main class="wrap">
+    <p class="hl" id="hopt"></p>
+    <div id="hlist"></div>
+  </main>
   </div>
   <div class="lb" id="lb" hidden>
     <button class="btn lbx" type="button" id="lbx" aria-label="Fermer l’image">Fermer ✕</button>
@@ -2058,6 +2088,322 @@ if (typeof module !== 'undefined') module.exports = HOME;
 
 </script>
 <script>
+/* Véritable chasseur : fonctions pures (testées dans tests/hunter.test.js), sans accès à la page. */
+var HUNTER = (function () {
+  /* « ## Zone » puis « nom | kills | statut | note » (voir l'en-tête de hunter.txt). statut : '' (obligatoire), 'facultatif', 'acier'. */
+  function parse(src) {
+    var zones = [], cur = null;
+    String(src).split('\n').forEach(function (raw) {
+      var line = raw.trim();
+      if (!line || line.charAt(0) === '#' && line.charAt(1) !== '#') return;
+      if (line.slice(0, 3) === '## ') { cur = { name: line.slice(3).trim(), items: [] }; zones.push(cur); return; }
+      if (!cur) throw new Error('Entrée avant la première zone : ' + line);
+      var p = line.split('|').map(function (s) { return s.trim(); }), tab = p[1] === 'tablette';
+      cur.items.push({ id: p[0], name: p[0], kills: tab ? 0 : +p[1], tablet: tab, status: p[2] || '', note: p[3] || '' });
+    });
+    return zones;
+  }
+  /* d : { nom: 1 }. La barre ne compte que les obligatoires ; les facultatifs ont leur compteur, l'entrée « acier » n'est comptée nulle part. */
+  function stats(zones, d) {
+    var s = { done: 0, total: 0, optDone: 0, optTotal: 0, pct: 0, zones: [] };
+    zones.forEach(function (z) {
+      var zs = { name: z.name, done: 0, total: 0 };
+      z.items.forEach(function (it) {
+        var on = d && d[it.id] ? 1 : 0;
+        if (it.status === '') { zs.total++; zs.done += on; }
+        else if (it.status === 'facultatif') { s.optTotal++; s.optDone += on; }
+      });
+      s.total += zs.total; s.done += zs.done; s.zones.push(zs);
+    });
+    s.pct = s.total ? s.done * 100 / s.total : 0;
+    return s;
+  }
+  function toggle(d, id) { if (d[id]) delete d[id]; else d[id] = 1; return d; }
+  /* Garde seulement les noms connus (objet { nom: 1 } ou liste de noms, comme dans « Copier mes données »). */
+  function clean(d, zones) {
+    var known = {}, out = {}, ids = Array.isArray(d) ? d : d && typeof d === 'object' ? Object.keys(d).filter(function (k) { return d[k]; }) : [];
+    zones.forEach(function (z) { z.items.forEach(function (it) { known[it.id] = 1; }); });
+    ids.forEach(function (id) { if (known[id]) out[id] = 1; });
+    return out;
+  }
+  return { parse: parse, stats: stats, toggle: toggle, clean: clean };
+})();
+if (typeof module !== 'undefined') module.exports = HUNTER;
+
+const HUNTER_SRC = `# Véritable chasseur : entrées du Journal du Chasseur (succès True Hunter / Véritable chasseur).
+# Sources : hollowknight.wiki (Hunter's Journal (Silksong), colonne « Number of kills required », sections Location de chaque ennemi) et fr.hollowknight.wiki (Ennemis (Silksong) pour les noms français).
+# Format : une zone par ligne « ## Zone », puis « nom | kills | statut | note ». statut : vide (obligatoire), facultatif (hors succès), acier (Âme d’acier seulement). kills = nombre, ou « tablette ».
+# Chaque ennemi est rangé dans UNE seule zone (celle où le wiki le place en premier, corrigée à la main) ; l’ordre dans une zone est celui du Journal.
+# Ne pas insérer de ligne au milieu sans raison : l’id de case est le nom français (stable).
+## Grotte Verdoyante
+Ver Verdoyant | 25
+Ver Verdoyant Colossal | 3
+Moucheton Verdoyant | 20
+Mère Forestière | 3
+Carapton | 30
+Mawrok | 8
+Pèlerin Bondisseur | 35 |  | Battre Pebb compte pour cette entrée.
+Pèlerin Moussu | 20
+## Gouffre d’Os
+Aknide | 15
+Pèlerin Suppliant | 35
+Pèlerin Ancien | 5
+Salvation Invoquée | 1 | acier | Requise pour le Souvenir du Chasseur dans ce mode seulement.
+## L’Antre
+Petit Cornusque | 35
+Aile-d’os | 15
+Gros Cornusque | 15
+Crâne-Tyran | 1
+Kilik | 25
+Volpeste | 30
+Caranide | 25
+Scaralex | 3 | facultatif
+Bête des Cloches | 1
+Pèlerin Ailé | 25
+## Quais Profonds
+Hoppemort | 20
+Lavaluge | 12
+Laveluge | 8
+Fourrecreux | 25
+Volsilex | 25
+Silex Ardent Ailé | 10
+Orpailleur de Pierre Fumante | 10
+Clochelier | 5
+Frères Précurseurs Signis & Gron | 1
+Fossillard | 3
+Lace | 12 |  | Si le combat de Lace aux Quais Profonds a été sauté, l’entrée se débloque en la battant une seule fois au Berceau.
+## Terres Lointaines
+Caranide Féroce | 15
+Hoppemort Ancien | 10
+Tarmite | 10
+Hokeur | 15
+Groncéros | 2
+Pèlerin Cornellule | 15
+Gros Pèlerin | 10 |  | Battre le Pèlerin Fatigué compte pour cette entrée.
+Zéphyrin | 15
+Folfeuille | 25
+Folfeuille Ailé | 20
+Quatrième Chorale | 1 |  | Peut aussi se compléter en entrant dans l’Acte 3.
+Gurr le Banni | 1
+Griffe-lame Ultime | 6 |  | Peut aussi se compléter en battant Karmelita.
+Chanteuse Skarr Karmelita | 1
+## Sentier du Chasseur
+Volpeste Enragée | 2
+Skarranard | 25
+Skarravole | 30
+Skarralleur | 20 |  | Peut aussi se compléter en battant Karmelita.
+Skarreux | 15 |  | Peut aussi se compléter en battant Karmelita.
+Skarralance | 10 |  | Peut aussi se compléter en battant Karmelita.
+Skarragarde | 2
+## Sombrevale
+Pèlerin Porte-cloche | 10
+Guide des Pèlerins | 15
+Mite | 30
+Mite Ailée | 25
+Mite Nourricière | 10
+Collecteur de Résidus | 20
+Coupe-soie | 25
+Démêleur de soie | 15
+Ailebrume | 1
+Feu Follet | 15 |  | Peut aussi se compléter en battant le Père de la Flamme.
+Insecte Ardent | 8 |  | Peut aussi se compléter en battant le Père de la Flamme.
+Père de la Flamme | 1
+Corbotère | 25
+Grand Corbotère | 20
+Corbotère Robuste | 15
+Juré Corbotère | 15 |  | Peut aussi se compléter en battant Corbotère.
+Grand Juré Corbotère | 10 |  | Peut aussi se compléter en battant Corbotère.
+Juré Corbotère Trapu | 8 |  | Peut aussi se compléter en battant Corbotère.
+Père Corbotère | 1
+Shakra | 1 | facultatif
+Garmond & Zaza | 1 | facultatif
+## Coquibois
+Pèlerin Ailé Porte-cloche | 10
+Pèlerin cupide | 2
+Coquillard d’Étang | 15
+Pêcheur d’Étang | 20
+Moucheron de Coquibois | 15
+Guêpe Sylvestre | 12
+Écorceuse | 12
+Écorceuse Cornue | 10
+Écorcine | 10
+Soeur Écorceuse | 1
+Phacia | 25
+Pollenor | 10
+Gahlia | 20
+Seth Gardien du Sanctuaire | 1
+Florinelle | 1
+Veuve | 1
+## Clochelle
+Pelu | 25
+Pelu Ailé | 12
+## Vermiterres
+Gromllin | 25
+Grom | 10
+Craggin | 3
+Craggleur | 1
+Graine de Vie Ailée | 8
+Plasmide | 15
+Plasmidas | 6
+Zango Plasmifié | 1
+## Chemin du Pécheur
+Bouefrasse | 80
+Férochard | 20
+Férochardier | 20
+Férosseur | 20
+Férogarde | 10
+Férochef | 10 |  | Peut aussi se compléter en battant Lugoli, Chef Déshonoré.
+Chef Déshonoré Lugoli | 1
+Spectre | 10 |  | Peut aussi se compléter en battant le Fantôme.
+## Bilesac
+Mouchardon | 4
+Férovore | 12
+Férochard Boursouflé | 12
+Chrysaline Lagnia | 25
+Miremitte | 20
+Squitard des Marais | 30
+Forrénin | 15
+Trappeur Forrénin | 12
+Groal le Grand | 1
+Fantôme | 1
+## Alcôves de la Chorale
+Émissaire | 20
+Bondisseur de la Chorale | 30
+Rinocorne de la Chorale | 15
+Porte-cloche de la Chorale | 25
+Volant de la Chorale | 20
+Ancien de la Chorale | 6
+Choristair | 25
+Reed | 30
+Grand Reed | 12
+Serrevaine | 10 |  | Peut aussi se compléter en détruisant la source des Clawmaidens aux Grandes Galeries, ou en entrant dans l’Acte 3.
+Ouvrier Mécanique | 15
+## Noyau Mécanique
+Rampant Mécanique | 15
+Engréchine | 10
+Créature Mécanique de la Chorale | 20
+Nettoyeur Mécanique | 12
+Gardien Mécanique | 8
+Sonneur Mécanique | 1
+Duo-Mécanique | 1
+## Voûtes des Murmures
+Fouisse-sombre | 10
+Enfant des Voûtes | 20
+Porte-lumière | 20
+Tisseur de Savoir | 15
+Archiviste | 10
+Trobbio | 1
+Trobbio Tourmenté | 1
+## Fonderie
+Voletissier | 30
+Tissomite | 20
+Sous-ouvrier | 15
+Sous-brosseur | 20
+Sous-frotteur | 10
+Sous-piqueur | 25
+Sous-loftin | 25
+Sous-trenier | 4
+Sous-mouche Mécanique | 25
+Transporteur Mécanique | 12
+## Grandes Galeries
+Sonneur de la Chorale | 3
+Prêtre | 15
+Maestro | 6
+Seconde Sentinelle | 1
+## Aile Blanche
+Tissomite Colossal | 6
+Carapace de Résidus | 8 |  | Peut aussi se compléter en battant Les Tissés.
+Soissile | 8 |  | Peut aussi se compléter en battant Les Tissés.
+Chirurgien | 3
+Morticien | 10
+Les Tissés | 1
+## Mémorium
+Seigneur Voletissier | 4
+Mémoria | 2
+Puce Colossal | 1
+## Conduits Putrides
+Squitard | 20
+Barnak | 8
+Siphonneur | 6
+## Le Bloc
+Pénitent | 8
+Pénitent Chétif | 6
+Mouchetin | 20 |  | Peut aussi se compléter en battant la Mère Nourricière.
+Scabiole | 15
+Garde-mouche | 10
+Mouche Carcérale | 8
+Mère Nourricière | 1
+Péché Originel | 1
+## Mont Fay
+Neigelin | 20
+Mnémonide | 10
+Mnémonorde | 3
+Serviteur Boran | 5
+Maîtresse de la Pique | 1
+## Marches Érodées
+Pèlerin Randonneur | 10
+Fouisseuse | 20
+Fouisseur des Sables | 40
+Vermille | 4
+Juge | 15
+Dernière Juge | 1
+Drizznite | 25
+Garmond Perdu | 1 | facultatif
+## Sables Karak
+Pélu Corallien | 15
+Drizzna | 14
+Pokonabbine | 16
+Volucorne | 8
+Grandes Volucornes | 2 |  | Il faut aussi battre la Conchmouche en Furie pour compléter l’entrée.
+Corailleur | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Rocorail | 6
+Kai | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Kai Gardecorne | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Kai Épine-d’acier | 15 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Yuma | 16 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Yumama | 3 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Karaka | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Kakri | 10 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Yago | 12 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Karak Gorr | 8 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Alita | 6 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Brute-corail Karaka | 6 |  | Peut aussi se compléter en battant le Roi Corail Khann. Uniquement dans le souvenir de Khann (Tour de Corail), Acte 3.
+Roi Corail Khann | 1
+Gardien de la Frontière | 1
+Foudrelon | 1
+Garipide | 30
+Imoba | 4
+## Tisse-nid d’Atla
+Serviteur Ignim | 8
+## Berceau
+Mère Supérieure Soie | 1
+## Abysses
+Rampant Obscure | 16
+Batailleur Obscure | 6
+Garganomble | 15
+Gargant Gloom | 4
+Tentacules du Néant | tablette |  | S’obtient en lisant une tablette dans le Tisse-nid d’Absolom (bas de l’Abysse).
+Lace Déchue | 1 | facultatif
+## Tréfloria
+Glissefeuille | 12 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Virefeuille | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Pindra | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Cerf Fleur | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Voraphore | 6 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Cloverstag | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Cerf Pâle | 1 | facultatif
+Trèflellin | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Verdanir | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Éscalion | 10 |  | Peut aussi se compléter en battant le Duo-Tréfleur.
+Duo-Tréfleur | 1
+## Ailleurs
+Masse du Néant | 8
+Ombrelisse | 10 |  | Peut aussi se compléter en finissant le Souvenir rouge.
+Skrill | 10
+Dévoreur de Cloche | 1
+`;
+</script>
+<script>
 (function () {
 'use strict';
 var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -2118,6 +2464,7 @@ var PD = {};
 var LSR = 'silksong100.runs.v1', RUNS = [];
 var LSR30 = 'silksong100.runs30.v1', RUNS30 = [];
 var LSTR = 'silksong100.tries.v1', TRIES = [], triesMsg = '', STEEL_OLD = 0;
+var LSH = 'silksong100.hunter.v1', HZ = HUNTER.parse(HUNTER_SRC), HUNT = {};   // Véritable chasseur : monstres cochés { nom: 1 }
 function steelNotice() {
   var n = $('#steel-notice'); if (!n) return;
   var show = CUR === 'steel' && STEEL_OLD > 0 && !Object.keys(S.d).length;
@@ -2210,6 +2557,7 @@ function loadLocal() {
   RUNS = normRuns(lsGet(LSR));
   RUNS30 = normRuns(lsGet(LSR30));
   TRIES = normTries(lsGet(LSTR));
+  var hh = lsGet(LSH); HUNT = HUNTER.clean(hh && hh.d, HZ);
 }
 function saveUI() { if (CUR) UI.po[CUR] = { open: UI.open, og: UI.og }; lsSet(LSUI, UI); }
 function touch() { S.u = Date.now(); lsSet(LS, serial()); schedulePush(); }
@@ -3083,6 +3431,7 @@ function importProfile(key, dd, tt) {
 }
 function exportAll() {
   var o = serialOf('a30'); o.sp = serialOf('speed'); o.st = serialOf('steel'); o.st.v = 5; o.runs = RUNS; o.runs30 = RUNS30;
+  o.hn = { v: 1, d: Object.keys(HUNT) };
   o.tries = TRIES.map(function (t) { var c = {}; for (var k in t) if (k !== 'ds') c[k] = t[k]; return c; });
   return o;
 }
@@ -3108,12 +3457,14 @@ function importData() {
   /* Âme d’acier : seule une sauvegarde de la liste par zone (v 3) est reprise ; les anciens identifiants de la route tomberaient sur de mauvaises lignes. Les essais, eux, ne dépendent pas des identifiants. */
   var pst = o.st && typeof o.st === 'object' && o.st.v === 5 ? countProfile('steel', o.st.d, o.st.t) : { n: 0, tn: 0 };
   var useA = pa.n + pa.tn > 0, useS = ps.n + ps.tn > 0, useT = pst.n + pst.tn > 0;
+  var hn = HUNTER.clean(o.hn && o.hn.d, HZ), nhn = Object.keys(hn).length;
   var rs = Array.isArray(o.runs) ? normRuns(o.runs) : [], r30 = Array.isArray(o.runs30) ? normRuns(o.runs30) : [], tr = Array.isArray(o.tries) ? normTries(o.tries) : [];
-  if (!useA && !useS && !useT && !rs.length && !r30.length && !tr.length) return fail('Rien de reconnu dans ce texte (ni étape, ni temps, ni run) : rien n’a été importé.');
+  if (!useA && !useS && !useT && !nhn && !rs.length && !r30.length && !tr.length) return fail('Rien de reconnu dans ce texte (ni étape, ni temps, ni run) : rien n’a été importé.');
   var repl = [], na = Object.keys(stOf('a30').d).length, ns = Object.keys(stOf('speed').d).length, nt = Object.keys(stOf('steel').d).length;
   if (useA && na) repl.push(plu(na, 'étape') + ' du 100 %');
   if (useS && ns) repl.push(plu(ns, 'étape') + ' du speedrun');
   if (useT && nt) repl.push(plu(nt, 'étape') + ' de l’Âme d’acier');
+  if (nhn && Object.keys(HUNT).length) repl.push(plu(Object.keys(HUNT).length, 'monstre') + ' du Véritable chasseur');
   if (tr.length && TRIES.length) repl.push(plu(TRIES.length, 'essai') + ' d’Âme d’acier');
   if (rs.length && RUNS.length) repl.push(plu(RUNS.length, 'run') + ' de speedrun');
   if (r30.length && RUNS30.length) repl.push(plu(RUNS30.length, 'run') + ' du 100 %');
@@ -3128,6 +3479,7 @@ function importData() {
   if (useA) r.a = importProfile('a30', o.d, o.t);
   if (useS) r.s = importProfile('speed', o.sp.d, o.sp.t);
   if (useT) r.t = importProfile('steel', o.st.d, o.st.t);
+  if (nhn) { HUNT = hn; saveHunt(); }
   if (tr.length) { TRIES = tr; saveTries(); }
   if (rs.length) { RUNS = rs; saveRuns(); }
   if (r30.length) { RUNS30 = r30; saveRuns30(); }
@@ -3136,6 +3488,7 @@ function importData() {
   if (useA) parts.push(plu(r.a.n, 'étape') + ' du 100 % et ' + r.a.tn + ' temps');
   if (useS) parts.push(plu(r.s.n, 'étape') + ' du speedrun et ' + plu(r.s.tn, 'repère'));
   if (useT) parts.push(plu(r.t.n, 'étape') + ' de l’Âme d’acier');
+  if (nhn) parts.push(plu(nhn, 'monstre') + ' du Véritable chasseur');
   if (tr.length) parts.push(plu(tr.length, 'essai') + ' d’Âme d’acier');
   if (rs.length) parts.push(plu(rs.length, 'run') + ' de speedrun');
   if (r30.length) parts.push(plu(r30.length, 'run') + ' du 100 %');
@@ -3272,9 +3625,17 @@ function bind() {
   $('#hcards').addEventListener('click', function (e) {
     var c = e.target.closest('.hcard'); if (!c) return;
     var cat = c.getAttribute('data-cat');
-    if (PROF[cat]) showView('cat', cat);
+    if (cat === 'hunter') showView('hunter');
+    else if (PROF[cat]) showView('cat', cat);
   });
   $('#menu').addEventListener('click', function () { showView('home'); });
+  $('#hmenu').addEventListener('click', function () { showView('home'); });
+  $('#hlist').addEventListener('change', function (e) {
+    var cb = e.target.closest('[data-h]'); if (!cb) return;
+    HUNTER.toggle(HUNT, cb.getAttribute('data-h')); saveHunt();
+    cb.closest('.hrow').classList.toggle('done', !!HUNT[cb.getAttribute('data-h')]);
+    refreshHunter();
+  });
   $('#tab-runs').addEventListener('click', runsClick);
   $('#tab-tries').addEventListener('click', function (e) {
     var b = e.target.closest('[data-try]'); if (!b) return;
@@ -3364,6 +3725,31 @@ function runsClick(e) {
   }
 }
 
+/* ---------- Véritable chasseur ---------- */
+function saveHunt() { lsSet(LSH, { d: HUNT, u: Date.now() }); }
+function buildHunter() {
+  var h = '';
+  HZ.forEach(function (z) {
+    h += '<h2 class="hzh">' + esc(z.name) + '<span class="hzc"></span></h2><ul class="hl-list">';
+    z.items.forEach(function (it) {
+      var on = !!HUNT[it.id], badge = it.status === 'facultatif' ? '<span class="hbadge">Facultatif</span>' : it.status === 'acier' ? '<span class="hbadge ac">Âme d’acier seulement</span>' : '';
+      h += '<li><label class="hrow' + (on ? ' done' : '') + '"><span class="chk" style="width:auto;margin:0;padding:0"><input type="checkbox" class="cb" data-h="' + esc(it.id) + '"' + (on ? ' checked' : '') + '><span class="box" data-n=""></span></span>' +
+        '<span class="hn"><b>' + esc(it.name) + '</b>' + badge + (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span>' +
+        '<span class="hq">' + (it.tablet ? 'Tablette' : '×' + it.kills + '<small>à tuer</small>') + '</span></label></li>';
+    });
+    h += '</ul>';
+  });
+  $('#hlist').innerHTML = h;
+  refreshHunter();
+}
+function refreshHunter() {
+  var s = HUNTER.stats(HZ, HUNT);
+  $('#hpct').textContent = pctFr(s.pct); $('#hmeta').textContent = s.done + '/' + s.total + ' monstres';
+  $('#hfill').style.width = s.pct + '%'; $('#hbar').setAttribute('aria-valuenow', String(Math.round(s.pct)));
+  $('#hopt').textContent = 'Obligatoires pour le succès : ' + s.done + '/' + s.total + ' · Facultatifs : ' + s.optDone + '/' + s.optTotal;
+  var zc = $$('#hlist .hzc'); s.zones.forEach(function (z, i) { if (zc[i]) zc[i].textContent = z.total ? z.done + '/' + z.total : ''; });
+}
+
 /* ---------- Accueil (menu des catégories) ---------- */
 function homeCard(cat, title, body) {
   return '<button type="button" class="hcard" data-cat="' + cat + '"><p class="hct">' + esc(title) + '</p>' + body + '<span class="hgo" aria-hidden="true"></span></button>';
@@ -3399,7 +3785,11 @@ function buildHome() {
     ? homeCard('steel', PROF.steel.name, '<p class="hcn"><b class="t">Réussi</b><span>à l’essai ' + sr.attempt + '</span></p><p class="hl ok">Steel Heart obtenu</p>')
     : homeCard('steel', PROF.steel.name, '<p class="hcn"><b>' + pctFr(sr.pct) + '<small>%</small></b><span>Essai ' + sr.attempt + '</span></p>' + homeBar(sr.pct) +
       '<p class="hl">' + (sr.deaths ? plu(sr.deaths, 'mort') + ' avant celui-ci' : 'Premier essai') + '</p>');
-  var any = Object.keys(stOf('a30').d).length + Object.keys(stOf('speed').d).length + RUNS.length + RUNS30.length;
+  var hs = HUNTER.stats(HZ, HUNT);
+  h += homeCard('hunter', 'Véritable chasseur',
+    '<p class="hcn"><b>' + pctFr(hs.pct) + '<small>%</small></b><span>' + hs.done + '/' + hs.total + ' monstres</span></p>' + homeBar(hs.pct) +
+    '<p class="hl">' + (hs.done >= hs.total ? 'Journal complet : le Souvenir du Chasseur t’attend chez Nuu' : 'Journal du Chasseur, zone par zone') + '</p>');
+  var any = Object.keys(stOf('a30').d).length + Object.keys(stOf('speed').d).length + RUNS.length + RUNS30.length + Object.keys(HUNT).length;
   if (any) {
     var days = UI.bk ? Math.floor((Date.now() - UI.bk) / 86400000) : null;
     if (days == null) h += '<p class="hl hnote">Tout est gardé sur ce téléphone seulement. Pense à « Copier mes données » (Infos › Mes données) de temps en temps : c’est ta seule sauvegarde.</p>';
@@ -3410,8 +3800,9 @@ function buildHome() {
 var VIEW = 'home';
 function showView(v, key) {
   VIEW = v;
-  $('#home').hidden = v !== 'home'; $('#cat').hidden = v !== 'cat';
+  $('#home').hidden = v !== 'home'; $('#cat').hidden = v !== 'cat'; $('#hunter').hidden = v !== 'hunter';
   if (v === 'home') buildHome();
+  else if (v === 'hunter') buildHunter();
   else {
     if (key && key !== CUR) useProfile(key); else { now.id = null; refreshAll(); }
     showTab('route');
