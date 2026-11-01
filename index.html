@@ -337,6 +337,9 @@ main { padding-block: 14px 110px; }
 
 .rrow { padding: 6px 0 10px; }
 .rrow.end { padding-block: 4px 16px; }
+.closebtn { appearance: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; margin: 6px 0 10px; padding: 8px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface2); color: var(--ink); font: inherit; font-weight: 700; font-size: 14.5px; cursor: pointer; }
+.closebtn svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.cat > .closebtn { width: auto; margin: 4px 14px 14px; }
 .rbtn { appearance: none; background: none; border: 1.5px dashed var(--line); color: var(--muted); font-weight: 700; font-size: 13.5px; padding: 8px 12px; min-height: 40px; border-radius: 10px; cursor: pointer; }
 .sbtn.die { color: var(--muted); }
 .sbtn.die.arm { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
@@ -2553,6 +2556,10 @@ PD.a30 = { phases: PHASES, steps: STEPS, order: ORDER, ph: PH, img: IMGS, gm: GM
 PD.speed = indexRoute(RTS.phases); PD.speed.img = {}; PD.speed.gm = SPEED_MAPS;
 PD.steel = indexRoute(RTST.phases); PD.steel.img = IMGS_STEEL; PD.steel.gm = GMAPS_STEEL;
 var CHEV = '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+/* Bouton « Refermer » en bas d’un menu déplié (zone, phase, groupe long, catégorie du 100 %) : évite de remonter tout en haut pour le refermer. */
+function closeBtn(attr, label) {
+  return '<button type="button" class="closebtn" ' + attr + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>' + esc(label) + '</button>';
+}
 /* Découpe une étape en : pastilles, phrase principale, gain, et contenu replié (détails, lieu, images). */
 /* Âme d’acier : une ligne = « titre ¶ Étiquette : valeur ¶ … ». Chaque champ s’affiche sur sa propre ligne avec une pastille d’étiquette ;
    Accès et Prérequis sont mis en avant (ambre), le statut (nécessaire ou facultatif) et le danger sont des pastilles colorées. */
@@ -2574,15 +2581,15 @@ function steelChip(lab, val) {
   return '<span class="st-chip ' + cls + '">' + esc(val) + '</span>';
 }
 function steelHTML(text, tags, gain) {
-  var parts = text.split(' ¶ '), out = '<span class="st-title">' + (tags || '') + rich(parts[0]) + '</span>', row = '';
+  var parts = text.split(' ¶ '), fields = '', row = '';
   parts.slice(1).forEach(function (p) {
     var i = p.indexOf(' : '), lab = i > 0 ? p.slice(0, i) : '';
     if (lab === 'Type' || lab === 'Statut' || lab === 'Moment') row += steelChip(lab, p.slice(i + 3));
-    else out += steelField(p);
+    else fields += steelField(p);
   });
   row += gain || '';
-  var at = out.indexOf('</span>') + 7;   // la rangée de pastilles vient juste sous le titre
-  return row ? out.slice(0, at) + '<span class="st-row">' + row + '</span>' + out.slice(at) : out;
+  /* titre (avec l’étiquette Boss), puis la rangée de pastilles juste dessous, puis les champs */
+  return '<span class="st-title">' + (tags || '') + rich(parts[0]) + '</span>' + (row ? '<span class="st-row">' + row + '</span>' : '') + fields;
 }
 function stepInfo(s) {
   var it = s.give ? ITEMS[s.give] : null, tags = '', i;
@@ -2689,9 +2696,10 @@ function buildRoute() {
         '<span class="gname">' + esc(g.title) + '</span><span class="gcount">0/' + g.steps.length + '</span>' + CHEV + '</button>' +
         '<div class="gbody">' + view + '<ul class="steps">');
       g.steps.forEach(function (s, si) { h.push(stepHTML(s, si + 1)); });
-      h.push('</ul></div></div>');
+      h.push('</ul>' + (g.steps.length >= 5 ? closeBtn('data-close="g:' + gk + '"', 'Refermer ' + plain(g.title)) : '') + '</div></div>');
     });
-    h.push('<div class="rrow"><button class="rbtn" type="button" data-reset="phase" data-ph="' + p.id + '">Remettre cette phase à zéro</button></div></div></section>');
+    h.push('<div class="rrow"><button class="rbtn" type="button" data-reset="phase" data-ph="' + p.id + '">Remettre cette phase à zéro</button></div>' +
+      closeBtn('data-close="ph:' + p.id + '"', 'Refermer ' + plain(p.title)) + '</div></section>');
   });
   $('#route-list').innerHTML = h.join('');
 }
@@ -2898,7 +2906,7 @@ function buildColl() {
       h.push('<li class="item" data-step="' + it.step + '"><label class="row" for="i-' + it.id + '"><input type="checkbox" class="cb" id="i-' + it.id + '" data-step="' + it.step + '"><span class="box" aria-hidden="true"></span>' +
         '<span class="body"><span class="iname">' + pip + esc(it.fr) + '</span><span class="ien">' + esc(it.en) + '</span><span class="ihint">' + esc(it.hint) + '</span></span></label></li>');
     });
-    h.push('</ul></details>');
+    h.push('</ul>' + closeBtn('data-catclose="' + c.id + '"', 'Refermer ' + c.label) + '</details>');
   });
   $('#tab-coll').innerHTML = h.join('');
 }
@@ -3194,6 +3202,11 @@ function toggleSection(pid) {
   var d = el.getBoundingClientRect().top - y;
   if (d) window.scrollBy(0, d);
 }
+/* Après « Refermer » en bas d’un menu : son en-tête revient juste sous la barre du haut, pour ne pas se retrouver plus bas dans la page. */
+function backTo(el) {
+  var top = $('.top'), off = top ? top.getBoundingClientRect().bottom : 0, d = el.getBoundingClientRect().top - off - 8;
+  if (d < 0) window.scrollBy(0, d);
+}
 function setOpen(id, open) {
   var el = $('#ph-' + id); if (!el) return;
   el.classList.toggle('open', open);
@@ -3485,6 +3498,13 @@ function bind() {
     var st = e.target.closest('.stext[data-act="more"]');
     if (st) { var li = st.closest('.step'), on = !li.classList.contains('open'); li.classList.toggle('open', on); st.setAttribute('aria-expanded', on ? 'true' : 'false'); return; }
     var rb = e.target.closest('.rbtn'); if (rb) { resetClick(rb); return; }
+    var cl = e.target.closest('[data-close]');
+    if (cl) {
+      var k = cl.getAttribute('data-close'), pid = k.slice(3);
+      if (k.indexOf('ph:') === 0) { setOpen(pid, false); backTo($('#ph-' + pid)); }
+      else { pid = k.slice(2); setGroup(pid, false); backTo($('#g-' + pid)); }
+      return;
+    }
     var gh = e.target.closest('.ghead');
     if (gh) { var gk = gh.getAttribute('data-gk'); setGroup(gk, !$('#g-' + gk).classList.contains('open')); return; }
     var b = e.target.closest('.phead'); if (!b) return;
@@ -3508,6 +3528,10 @@ function bind() {
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLB(); });
   $('#tab-coll').addEventListener('change', function (e) {
     var cb = e.target.closest('.cb'); if (cb) toggleStep(cb.getAttribute('data-step'), cb.checked);
+  });
+  $('#tab-coll').addEventListener('click', function (e) {
+    var cl = e.target.closest('[data-catclose]'); if (!cl) return;
+    var d = cl.closest('details.cat'); d.open = false; backTo(d);   // l’événement « toggle » enregistre l’état
   });
   $('#tab-coll').addEventListener('toggle', function (e) {
     var d = e.target; if (d.classList && d.classList.contains('cat')) { UI.openCat[d.getAttribute('data-cat')] = d.open ? 1 : 0; saveUI(); }
